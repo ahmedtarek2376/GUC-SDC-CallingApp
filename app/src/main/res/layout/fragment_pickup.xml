@@ -1,0 +1,74 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    tools:context="com.guc.ahmed.callingapp.fragments.PickupFragment"
+    android:orientation="vertical"
+    android:id="@+id/pickup_fragment">
+
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+    <android.support.v7.widget.CardView
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/card_view"
+        android:layout_gravity="bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        card_view:cardCornerRadius="10dp"
+        card_view:cardElevation="2dp"
+        card_view:cardUseCompatPadding="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorPrimary">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:src="@drawable/custom_marker_start" />
+
+                <TextView
+                    android:id="@+id/pickup_txt"
+                    android:layout_width="0dp"
+                    android:layout_weight="15"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="10dp"
+                    android:hint="Choose a pinned location"
+                    android:textColor="@color/text_black"
+                    android:textSize="24sp"
+                    android:textAlignment="center"
+                    android:gravity="center" />
+            </LinearLayout>
+
+
+            <com.dd.processbutton.iml.ActionProcessButton
+                android:id="@+id/pickup_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Confirm Pickup"
+                android:textSize="24sp"
+                android:textColor="@color/colorPrimary"
+                custom:pb_colorNormal="@color/button_pressed"
+                custom:pb_colorPressed="@color/colorAccent" />
+
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
+
+    </fragment>
+
+</LinearLayout>
