@@ -96,7 +96,7 @@ public class PickupFragment extends Fragment
         button = (ActionProcessButton) view.findViewById(R.id.pickup_btn);
         button.setMode(ActionProcessButton.Mode.ENDLESS);
         button.setOnClickListener(confirmPickupOnClickListener);
-        Typeface roboBlack = Typeface.createFromAsset(getContext().getAssets(), "fonts/Roboto-Bold.ttf");
+        Typeface roboBlack = Typeface.createFromAsset(getContext().getAssets(), "fonts/Roboto-Regular.ttf");
         button.setTypeface(roboBlack);
 
         pickupLocationText = view.findViewById(R.id.pickup_txt);

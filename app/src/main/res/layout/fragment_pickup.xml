@@ -20,7 +20,7 @@
         android:layout_gravity="bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        card_view:cardCornerRadius="10dp"
+        card_view:cardCornerRadius="8dp"
         card_view:cardElevation="2dp"
         card_view:cardUseCompatPadding="true">
 
@@ -30,29 +30,33 @@
             android:orientation="vertical">
 
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/colorPrimary">
 
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:layout_marginHorizontal="10dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:layout_weight="1"
+                    android:layout_centerVertical="true"
                     android:src="@drawable/custom_marker_start" />
 
                 <TextView
                     android:id="@+id/pickup_txt"
-                    android:layout_width="0dp"
-                    android:layout_weight="15"
+                    android:layout_width="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
                     android:layout_height="wrap_content"
-                    android:paddingVertical="10dp"
+                    android:paddingVertical="12dp"
                     android:hint="Choose a pinned location"
                     android:textColor="@color/text_black"
-                    android:textSize="24sp"
+                    android:textSize="16sp"
                     android:textAlignment="center"
                     android:gravity="center" />
-            </LinearLayout>
+            </RelativeLayout>
 
 
             <com.dd.processbutton.iml.ActionProcessButton
@@ -60,7 +64,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Confirm Pickup"
-                android:textSize="24sp"
+                android:textSize="20sp"
                 android:textColor="@color/colorPrimary"
                 custom:pb_colorNormal="@color/button_pressed"
                 custom:pb_colorPressed="@color/colorAccent" />
@@ -70,5 +74,6 @@
     </android.support.v7.widget.CardView>
 
     </fragment>
+
 
 </LinearLayout>

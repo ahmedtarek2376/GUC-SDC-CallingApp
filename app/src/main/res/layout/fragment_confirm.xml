@@ -16,24 +16,10 @@
         android:layout_height="0dp"
         android:layout_weight="3" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="2"
-        android:orientation="vertical"
-        android:backgroundTint="@color/colorPrimaryDark">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Trip Details"
-            android:textSize="24sp"
-            android:textColor="@color/colorAccent"
-            android:textAlignment="center"/>
-
         <android.support.v7.widget.CardView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
             app:cardElevation="4dp"
             app:cardCornerRadius="10dp"
             app:cardUseCompatPadding="true"
@@ -43,7 +29,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
-            
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Trip Details"
+                    android:textSize="20sp"
+                    android:textColor="@color/colorAccent"/>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -241,10 +234,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Request Trip"
-                    android:textSize="24sp"
+                    android:textSize="20sp"
                     android:textColor="@android:color/white"
-                    custom:pb_colorNormal="@color/button_pressed"
-                    custom:pb_colorPressed="@color/colorAccent"
+                    custom:pb_colorNormal="@color/colorAccent"
+                    custom:pb_colorPressed="@color/confirm_blue"
                     android:layout_gravity="bottom"/>
 
             </LinearLayout>
@@ -256,5 +249,3 @@
 
 
     </LinearLayout>
-
-</LinearLayout>

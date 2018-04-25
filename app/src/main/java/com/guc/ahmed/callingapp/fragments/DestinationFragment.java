@@ -123,7 +123,7 @@ public class DestinationFragment extends Fragment
         button = (ActionProcessButton) view.findViewById(R.id.destination_btn);
         button.setMode(ActionProcessButton.Mode.ENDLESS);
         button.setOnClickListener(confirmPickupOnClickListener);
-        Typeface roboBlack = Typeface.createFromAsset(getContext().getAssets(), "fonts/Roboto-Bold.ttf");
+        Typeface roboBlack = Typeface.createFromAsset(getContext().getAssets(), "fonts/Roboto-Regular.ttf");
         button.setTypeface(roboBlack);
 
         activity = (AppCompatActivity) getActivity();
@@ -500,6 +500,16 @@ public class DestinationFragment extends Fragment
             holder.destinationName.setText(chosenDestinations.get(position).getName());
 
             holder.handleView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View view, MotionEvent motionEvent) {
+                    if (motionEvent.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                        mDragStartListener.onStartDrag(holder);
+                    }
+                    return false;
+                }
+            });
+
+            holder.destinationName.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View view, MotionEvent motionEvent) {
                     if (motionEvent.getActionMasked() == MotionEvent.ACTION_DOWN) {

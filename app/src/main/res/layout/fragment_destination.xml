@@ -29,83 +29,58 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center">
 
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:src="@drawable/custom_marker_end" />
-
-                <android.support.v7.widget.RecyclerView
-                    android:id="@+id/destination_recycler_view"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="14"
-                    android:layout_gravity="center"
-                    android:visibility="gone"/>
+                    android:id="@+id/icon_1"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/custom_marker_end"
+                    android:layout_centerVertical="true"
+                    android:layout_marginHorizontal="10dp"/>
 
                 <TextView
                     android:id="@+id/destination_txt"
-                    android:layout_width="0dp"
-                    android:layout_weight="14"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:backgroundTint="@color/colorPrimary"
-                    android:paddingVertical="10dp"
+                    android:paddingVertical="12dp"
                     android:textColor="@color/text_grey_light"
-                    android:textSize="24sp"
+                    android:textSize="16sp"
                     android:hint="Choose up to 3 destinations"
                     android:textAlignment="center"
-                    android:gravity="center" />
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    />
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/destination_recycler_view"
+                    android:layout_toRightOf="@id/icon_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="10dp"
+                    android:visibility="gone"/>
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:textSize="24sp"
-                    android:paddingVertical="10dp"
+                    android:paddingVertical="12dp"
+                    android:textSize="16sp"
                     android:textAlignment="center"
-                    android:gravity="center"
-                    android:visibility="invisible"/>
-
-                <!--<android.support.v7.widget.CardView-->
-                    <!--xmlns:card_view="http://schemas.android.com/apk/res-auto"-->
-                    <!--android:id="@+id/multiple_stops_card"-->
-                    <!--android:layout_gravity="bottom"-->
-                    <!--android:layout_width="0dp"-->
-                    <!--android:layout_weight="3"-->
-                    <!--android:layout_height="match_parent"-->
-                    <!--card_view:cardCornerRadius="5dp"-->
-                    <!--card_view:cardElevation="4dp"-->
-                    <!--card_view:cardUseCompatPadding="true">-->
-
-                <!--<LinearLayout-->
-                    <!--android:layout_width="0dp"-->
-                    <!--android:layout_weight="1"-->
-                    <!--android:layout_height="match_parent"-->
-                    <!--android:orientation="vertical"-->
-                    <!--android:gravity="center_vertical">-->
-
-                    <!--&lt;!&ndash;<ImageView&ndash;&gt;-->
-                        <!--&lt;!&ndash;android:layout_width="wrap_content"&ndash;&gt;-->
-                        <!--&lt;!&ndash;android:layout_height="wrap_content"&ndash;&gt;-->
-                        <!--&lt;!&ndash;android:src="@drawable/multiple_location"&ndash;&gt;-->
-                        <!--&lt;!&ndash;android:tint="@color/colorAccent"&ndash;&gt;-->
-                        <!--&lt;!&ndash;android:layout_gravity="top|center_horizontal"/>&ndash;&gt;-->
-                    <!--&lt;!&ndash;<TextView&ndash;&gt;-->
-                        <!--&lt;!&ndash;android:layout_width="match_parent"&ndash;&gt;-->
-                        <!--&lt;!&ndash;android:layout_height="wrap_content"&ndash;&gt;-->
-                        <!--&lt;!&ndash;android:hint="Multiple Stops"&ndash;&gt;-->
-                        <!--&lt;!&ndash;android:textSize="10sp"&ndash;&gt;-->
-                        <!--&lt;!&ndash;android:textAlignment="center"&ndash;&gt;-->
-                        <!--&lt;!&ndash;android:layout_gravity="bottom"/>&ndash;&gt;-->
-                <!--</LinearLayout>-->
-                <!--</android.support.v7.widget.CardView>-->
+                    android:layout_centerVertical="true"
+                    android:layout_toRightOf="@id/destination_recycler_view"
+                    android:visibility="invisible"
+                    />
 
 
-            </LinearLayout>
+            </RelativeLayout>
 
 
 
@@ -114,7 +89,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Confirm Destination"
-                android:textSize="24sp"
+                android:textSize="20sp"
                 android:textColor="@android:color/white"
                 custom:pb_colorNormal="@color/button_pressed"
                 custom:pb_colorPressed="@color/colorAccent" />
@@ -124,8 +99,6 @@
     </android.support.v7.widget.CardView>
 
     </fragment>
-
-
 
     </LinearLayout>
 

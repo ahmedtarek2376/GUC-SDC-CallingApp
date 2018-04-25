@@ -10,8 +10,9 @@
     <color name="my_red">#F44336</color>
     <color name="text_black">#212121</color>
     <color name="text_grey_dark">#606060</color>
-
-
+    <color name="icon_green">#388E3C</color>
+    <color name="icon_red">#D50000</color>
+    <color name="confirm_blue">#4fc3f7</color>
 
 
     <color name="fbutton_default_color">#3eadeb</color>
