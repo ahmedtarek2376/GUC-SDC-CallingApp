@@ -416,7 +416,6 @@ public class DestinationFragment extends Fragment
         @Override
         public void onLocationResult(LocationResult locationResult) {
             super.onLocationResult(locationResult);
-            Log.v("LocationCallback", "UPDATING LOCATION");
             for (Location location : locationResult.getLocations()){
 
                 LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
