@@ -56,6 +56,8 @@ import com.guc.ahmed.callingapp.classes.Trip;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
 import com.guc.ahmed.callingapp.gucpoints.GucPoints;
 import com.guc.ahmed.callingapp.map.CustomMarker;
+import com.tapadoo.alerter.Alert;
+import com.tapadoo.alerter.Alerter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,6 +93,7 @@ public class DestinationFragment extends Fragment
     private RecyclerView.LayoutManager mLayoutManager;
     private ArrayList<GucPlace> chosenDestinations;
     private ItemTouchHelper mItemTouchHelper;
+    private Alert alert;
 
     public DestinationFragment() {
         // Required empty public constructor
@@ -183,14 +186,24 @@ public class DestinationFragment extends Fragment
             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
             mMap.setMyLocationEnabled(true);
         }
-
         actionBar.setTitle("Choose Your Destination");
+
+        alert = Alerter.create(getActivity())
+                .setTitle("Choose Your Destination")
+                .setText("Click on a pin on the map to choose where you want to go. You can choose up to 3 destinations. You can reorder your chosen destinations by dragging them.")
+                .enableSwipeToDismiss()
+                .enableIconPulse(true)
+                .setIcon(R.drawable.custom_marker_end)
+                .setBackgroundColorRes(R.color.colorAccent)
+                .setDuration(5000)
+                .show();
         Log.v("DESTINATION", "onResume");
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        Alerter.clearCurrent(getActivity());
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
         Log.v("DESTINATION", "onPause");
     }

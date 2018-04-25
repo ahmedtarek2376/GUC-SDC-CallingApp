@@ -233,7 +233,7 @@
                     android:id="@+id/request_trip_btn"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Request Trip"
+                    android:text="Request Car"
                     android:textSize="20sp"
                     android:textColor="@android:color/white"
                     custom:pb_colorNormal="@color/colorAccent"

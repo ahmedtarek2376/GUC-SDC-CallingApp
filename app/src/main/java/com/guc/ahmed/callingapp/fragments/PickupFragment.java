@@ -2,10 +2,12 @@ package com.guc.ahmed.callingapp.fragments;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
@@ -45,6 +47,8 @@ import com.guc.ahmed.callingapp.classes.Trip;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
 import com.guc.ahmed.callingapp.gucpoints.GucPoints;
 import com.guc.ahmed.callingapp.map.CustomMarker;
+import com.tapadoo.alerter.Alert;
+import com.tapadoo.alerter.Alerter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,6 +76,7 @@ public class PickupFragment extends Fragment
     private AppCompatActivity activity;
     private ActionBar actionBar;
     private Trip requestTrip;
+    private Alert alert;
 
     public void setRequestTrip(Trip requestTrip) {
         this.requestTrip = requestTrip;
@@ -130,8 +135,16 @@ public class PickupFragment extends Fragment
             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
             mMap.setMyLocationEnabled(true);
         }
-
         actionBar.setTitle("Choose Pickup Location");
+        alert = Alerter.create(getActivity())
+                .setTitle("Choose Pickup Location")
+                .setText("Click on a pin on the map to choose your pickup location.")
+                .enableSwipeToDismiss()
+                .enableIconPulse(true)
+                .setIcon(R.drawable.custom_marker_start)
+                .setBackgroundColorRes(R.color.colorAccent)
+                .setDuration(5000)
+                .show();
         Log.v("PICKUP", "onREsume");
     }
 
@@ -139,6 +152,7 @@ public class PickupFragment extends Fragment
     public void onPause() {
         super.onPause();
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+        Alerter.clearCurrent(getActivity());
         Log.v("PICKUP", "onPause");
     }
 
@@ -251,12 +265,27 @@ public class PickupFragment extends Fragment
             if(pickupLocation == null){
                 Toast.makeText(getActivity(), "Please select a pickup location", Toast.LENGTH_SHORT).show();
             }else{
-                button.setProgress(1);
-                onPickupLocationListener.onPickupConfirmed(pickupLocation);
-                button.setProgress(0);
+                if(!isGpsAvailable(getActivity().getApplicationContext())){
+                    Alerter.clearCurrent(getActivity());
+                    alert = Alerter.create(getActivity())
+                            .setTitle("Location is turned off !!")
+                            .setText("Please enable location to proceed. Location is used to check whether you are inside the GUC campus.")
+                            .enableIconPulse(true)
+                            .setBackgroundColorRes(R.color.red_error)
+                            .setDuration(5000)
+                            .show();
+                }else {
+                    Alerter.clearCurrent(getActivity());
+                    onPickupLocationListener.onPickupConfirmed(pickupLocation);
+                }
             }
         }
     };
+
+    private boolean isGpsAvailable(Context context) {
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
 
     public void addMarkersToMap(){
         CustomMarker customMarker = new CustomMarker(getContext());

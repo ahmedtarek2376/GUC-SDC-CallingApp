@@ -54,6 +54,7 @@ import com.guc.ahmed.callingapp.route.Route;
 import com.guc.ahmed.callingapp.route.RouteException;
 import com.guc.ahmed.callingapp.route.Routing;
 import com.guc.ahmed.callingapp.route.RoutingListener;
+import com.tapadoo.alerter.Alerter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -162,14 +163,22 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback, Rou
             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
             mMap.setMyLocationEnabled(true);
         }
-
         actionBar.setTitle("Your Trip");
+        Alerter.create(getActivity())
+                .setTitle("Trip Details")
+                .setText("Please revise your trip details showing the pickup location followed by your chosen destination(s). For any changes press the back button.")
+                .enableSwipeToDismiss()
+                .enableIconPulse(true)
+                .setBackgroundColorRes(R.color.colorAccent)
+                .setDuration(5000)
+                .show();
         Log.v("Tracking....", "RESUMED");
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        Alerter.clearCurrent(getActivity());
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
         Log.v("Tracking....", "PAUSED");
     }

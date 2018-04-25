@@ -3,7 +3,12 @@ package com.guc.ahmed.callingapp;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -12,9 +17,11 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -34,6 +41,8 @@ import com.guc.ahmed.callingapp.fragments.PickupFragment;
 import com.guc.ahmed.callingapp.fragments.TripHistoryFragment;
 import com.guc.ahmed.callingapp.fragments.ValidateFragment;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
+import com.tapadoo.alerter.Alert;
+import com.tapadoo.alerter.Alerter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +65,7 @@ public class MainActivity extends AppCompatActivity
     private SharedPreferences.Editor editor;
     private ConfirmFragment confirmFragment;
     private PickupFragment pickupFragment;
+    private Alert alert;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -93,7 +103,7 @@ public class MainActivity extends AppCompatActivity
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, pickupFragment, "PICKUP_FRAGMENT").commit();
 
-        //////////////////////////////////////////////
+        /////////////////////////w/////////////////////
         mAuth = FirebaseAuth.getInstance();
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -143,6 +153,37 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         checkPlayServices();
+        if(!isNetworkStatusAvialable(getApplicationContext())) {
+            Alerter.clearCurrent(this);
+            alert = Alerter.create(this)
+                    .setTitle("No Internet Connection !!")
+                    .setText("Please enable internet connection to proceed. Click to dismiss when internet connection is available.")
+                    .disableOutsideTouch()
+                    .enableIconPulse(true)
+                    .setBackgroundColorRes(R.color.red_error)
+                    .enableInfiniteDuration(true)
+                    .setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if(isNetworkStatusAvialable(getApplicationContext())){
+                                alert.hide();
+                            }
+                        }
+                    })
+                    .show();
+        }
+
+    }
+
+    public static boolean isNetworkStatusAvialable (Context context) {
+        ConnectivityManager cm =
+                (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+
+        return isConnected;
     }
 
     //update UI on sign out
