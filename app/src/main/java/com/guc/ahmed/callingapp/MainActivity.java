@@ -320,11 +320,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onEditPickupClicked() {
-        this.onBackPressed();
-    }
-
-    @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         editor.putBoolean("AccountVerified", accountVerified);
         editor.commit();

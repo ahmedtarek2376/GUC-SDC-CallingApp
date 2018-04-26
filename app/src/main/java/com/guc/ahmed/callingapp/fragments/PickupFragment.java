@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.location.Location;
@@ -11,13 +12,17 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,7 +65,7 @@ public class PickupFragment extends Fragment
     private GoogleMap mMap;
     private View view;
 
-    private Location lastLocation;
+    private LatLng lastLocation;
     private LocationRequest locationRequest;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private HashMap<String,Marker> markers;
@@ -136,15 +141,27 @@ public class PickupFragment extends Fragment
             mMap.setMyLocationEnabled(true);
         }
         actionBar.setTitle("Choose Pickup Location");
-        alert = Alerter.create(getActivity())
-                .setTitle("Choose Pickup Location")
-                .setText("Click on a pin on the map to choose your pickup location.")
-                .enableSwipeToDismiss()
-                .enableIconPulse(true)
-                .setIcon(R.drawable.custom_marker_start)
-                .setBackgroundColorRes(R.color.colorAccent)
-                .setDuration(5000)
-                .show();
+//        alert = Alerter.create(getActivity())
+//                .setTitle("Choose Pickup Location")
+//                .setText("Click on a pin on the map to choose your pickup location.")
+//                .enableSwipeToDismiss()
+//                .enableIconPulse(true)
+//                .setIcon(R.drawable.custom_marker_start)
+//                .setBackgroundColorRes(R.color.colorAccent)
+//                .setDuration(5000)
+//                .show();
+
+        CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.pickup_fragment);
+        Snackbar snackbar = Snackbar.make(coordinatorLayout, "Click on a pin to choose your pickup location", Snackbar.LENGTH_LONG);
+        View view = snackbar.getView();
+        view.setBackgroundColor(getResources().getColor(R.color.fbutton_color_turquoise));
+        TextView textView = view.findViewById(android.support.design.R.id.snackbar_text);
+        textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        CoordinatorLayout.LayoutParams params=(CoordinatorLayout.LayoutParams)view.getLayoutParams();
+        params.gravity = Gravity.TOP;
+        view.setLayoutParams(params);
+        snackbar.show();
+
         Log.v("PICKUP", "onREsume");
     }
 
@@ -263,18 +280,52 @@ public class PickupFragment extends Fragment
         @Override
         public void onClick(View v) {
             if(pickupLocation == null){
-                Toast.makeText(getActivity(), "Please select a pickup location", Toast.LENGTH_SHORT).show();
+                CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.pickup_fragment);
+                Snackbar snackbar = Snackbar.make(coordinatorLayout, "Please select a pickup location", Snackbar.LENGTH_SHORT);
+                View view = snackbar.getView();
+                view.setBackgroundColor(getResources().getColor(R.color.red_error));
+                TextView textView = view.findViewById(android.support.design.R.id.snackbar_text);
+                textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                CoordinatorLayout.LayoutParams params=(CoordinatorLayout.LayoutParams)view.getLayoutParams();
+                params.gravity = Gravity.TOP;
+                view.setLayoutParams(params);
+                snackbar.show();
             }else{
                 if(!isGpsAvailable(getActivity().getApplicationContext())){
                     Alerter.clearCurrent(getActivity());
                     alert = Alerter.create(getActivity())
-                            .setTitle("Location is turned off !!")
-                            .setText("Please enable location to proceed. Location is used to check whether you are inside the GUC campus.")
+                            .setTitle("Location is turned off !")
+                            .setText("Click here to enable your Location from Settings. Location is used to check whether you are inside the GUC campus.")
+                            .enableIconPulse(true)
+                            .setBackgroundColorRes(R.color.red_error)
+                            .setDuration(5000)
+                            .setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                                }
+                            })
+                            .show();
+                } else if(lastLocation == null) {
+                    Alerter.clearCurrent(getActivity());
+                    alert = Alerter.create(getActivity())
+                            .setTitle("Can not get Location updates !")
+                            .setText("Please check your location settings.")
                             .enableIconPulse(true)
                             .setBackgroundColorRes(R.color.red_error)
                             .setDuration(5000)
                             .show();
-                }else {
+                }else if(GucPoints.GUC.contains(lastLocation)) {
+                    ////////////////////This has to be changed to NOT////////////////////////////////
+                        Alerter.clearCurrent(getActivity());
+                        alert = Alerter.create(getActivity())
+                                .setTitle("You are not inside GUC campus !")
+                                .setText("You can order a car only inside the GUC campus.")
+                                .enableIconPulse(true)
+                                .setBackgroundColorRes(R.color.red_error)
+                                .setDuration(5000)
+                                .show();
+                } else {
                     Alerter.clearCurrent(getActivity());
                     onPickupLocationListener.onPickupConfirmed(pickupLocation);
                 }
@@ -346,13 +397,7 @@ public class PickupFragment extends Fragment
             super.onLocationResult(locationResult);
             Log.v("LocationCallback", "UPDATING LOCATION");
             for (Location location : locationResult.getLocations()){
-
-                LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-                //LatLng latLng = new LatLng(29.986926, 31.440630);
-
-                if(! GucPoints.GUC.contains(latLng)){
-                    Toast.makeText(getContext(), "You are not inside the GUC campus", Toast.LENGTH_LONG).show();
-                }
+                lastLocation = new LatLng(location.getLatitude(), location.getLongitude());
             }
         }
     };

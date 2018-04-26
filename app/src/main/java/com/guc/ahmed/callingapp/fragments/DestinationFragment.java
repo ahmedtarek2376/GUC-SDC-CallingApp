@@ -11,6 +11,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -21,6 +23,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -69,19 +72,14 @@ public class DestinationFragment extends Fragment
     private GoogleMap mMap;
     private View view;
 
-    private Location lastLocation;
+    private LatLng lastLocation;
     private LocationRequest locationRequest;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private HashMap<String,Marker> markers;
-    private NiftyDialogBuilder dialogBuilder;
-    private ProgressDialog progressDialog;
-    private List<Polyline> polylines;
-    private Marker selectedMarker;
     private Marker pickupMarker;
     private DestinationFragment.OnDestinationLocationListener onDestinationLocationListener;
 
     private TextView destinationTxt;
-    private GucPlace destinationLocation;
     private ActionProcessButton button;
     private Trip requestTrip;
 
@@ -101,7 +99,6 @@ public class DestinationFragment extends Fragment
 
     public interface OnDestinationLocationListener {
         void onDestinationConfirmed(ArrayList<GucPlace> gucPlace);
-        void onEditPickupClicked();
     }
 
     @Override
@@ -118,8 +115,6 @@ public class DestinationFragment extends Fragment
 
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
-
-        dialogBuilder=NiftyDialogBuilder.getInstance(getContext());
 
         destinationTxt = view.findViewById(R.id.destination_txt);
 
@@ -173,7 +168,6 @@ public class DestinationFragment extends Fragment
         mapFragment.getMapAsync(this);
 
         markers = new HashMap<>();
-        polylines = new ArrayList<>();
 
         return view;
     }
@@ -188,15 +182,28 @@ public class DestinationFragment extends Fragment
         }
         actionBar.setTitle("Choose Your Destination");
 
-        alert = Alerter.create(getActivity())
-                .setTitle("Choose Your Destination")
-                .setText("Click on a pin on the map to choose where you want to go. You can choose up to 3 destinations. You can reorder your chosen destinations by dragging them.")
-                .enableSwipeToDismiss()
-                .enableIconPulse(true)
-                .setIcon(R.drawable.custom_marker_end)
-                .setBackgroundColorRes(R.color.colorAccent)
-                .setDuration(5000)
-                .show();
+//        alert = Alerter.create(getActivity())
+//                .setTitle("Choose Your Destination")
+//                .setText("Click on a pin on the map to choose where you want to go. You can choose up to 3 destinations. You can reorder your chosen destinations by dragging them.")
+//                .enableSwipeToDismiss()
+//                .enableIconPulse(true)
+//                .setIcon(R.drawable.custom_marker_end)
+//                .setBackgroundColorRes(R.color.colorAccent)
+//                .setDuration(5000)
+//                .show();
+
+        CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.destination_fragment);
+        Snackbar snackbar = Snackbar.make(coordinatorLayout, "Choose up to 3 destinations (ordered)", Snackbar.LENGTH_LONG);
+        View view = snackbar.getView();
+        view.setBackgroundColor(getResources().getColor(R.color.fbutton_color_turquoise));
+        TextView textView = view.findViewById(android.support.design.R.id.snackbar_text);
+        textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        CoordinatorLayout.LayoutParams params=(CoordinatorLayout.LayoutParams)view.getLayoutParams();
+        params.gravity = Gravity.TOP;
+        view.setLayoutParams(params);
+        snackbar.show();
+
+
         Log.v("DESTINATION", "onResume");
     }
 
@@ -346,7 +353,16 @@ public class DestinationFragment extends Fragment
         @Override
         public void onClick(View v) {
             if(chosenDestinations.size() == 0){
-                Toast.makeText(getActivity(), "Please select a destination", Toast.LENGTH_SHORT).show();
+                CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.destination_fragment);
+                Snackbar snackbar = Snackbar.make(coordinatorLayout, "Please select a destination", Snackbar.LENGTH_SHORT);
+                View view = snackbar.getView();
+                view.setBackgroundColor(getResources().getColor(R.color.red_error));
+                TextView textView = view.findViewById(android.support.design.R.id.snackbar_text);
+                textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                CoordinatorLayout.LayoutParams params=(CoordinatorLayout.LayoutParams)view.getLayoutParams();
+                params.gravity = Gravity.TOP;
+                view.setLayoutParams(params);
+                snackbar.show();
             }else{
                 button.setProgress(1);
                 onDestinationLocationListener.onDestinationConfirmed(chosenDestinations);
@@ -430,13 +446,7 @@ public class DestinationFragment extends Fragment
         public void onLocationResult(LocationResult locationResult) {
             super.onLocationResult(locationResult);
             for (Location location : locationResult.getLocations()){
-
-                LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-                //LatLng latLng = new LatLng(29.986926, 31.440630);
-
-                if(! GucPoints.GUC.contains(latLng)){
-                    Toast.makeText(getContext(), "You are not inside the GUC campus", Toast.LENGTH_LONG).show();
-                }
+                lastLocation = new LatLng(location.getLatitude(), location.getLongitude());
             }
         }
     };

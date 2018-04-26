@@ -12,12 +12,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,7 +68,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback, Rou
     private GoogleMap mMap;
     private View view;
 
-    private Location lastLocation;
+    private LatLng lastLocation;
     private LocationRequest locationRequest;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private HashMap<String,Marker> markers;
@@ -164,14 +167,26 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback, Rou
             mMap.setMyLocationEnabled(true);
         }
         actionBar.setTitle("Your Trip");
-        Alerter.create(getActivity())
-                .setTitle("Trip Details")
-                .setText("Please revise your trip details showing the pickup location followed by your chosen destination(s). For any changes press the back button.")
-                .enableSwipeToDismiss()
-                .enableIconPulse(true)
-                .setBackgroundColorRes(R.color.colorAccent)
-                .setDuration(5000)
-                .show();
+//        Alerter.create(getActivity())
+//                .setTitle("Trip Details")
+//                .setText("Please revise your trip details showing the pickup location followed by your chosen destination(s). For any changes press the back button.")
+//                .enableSwipeToDismiss()
+//                .enableIconPulse(true)
+//                .setBackgroundColorRes(R.color.colorAccent)
+//                .setDuration(5000)
+//                .show();
+
+        CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.confirm_fragment);
+        Snackbar snackbar = Snackbar.make(coordinatorLayout, "Please revise your trip details before requesting", Snackbar.LENGTH_LONG);
+        View view = snackbar.getView();
+        view.setBackgroundColor(getResources().getColor(R.color.fbutton_color_turquoise));
+        TextView textView = view.findViewById(android.support.design.R.id.snackbar_text);
+        textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        CoordinatorLayout.LayoutParams params=(CoordinatorLayout.LayoutParams)view.getLayoutParams();
+        params.gravity = Gravity.TOP;
+        view.setLayoutParams(params);
+        snackbar.show();
+
         Log.v("Tracking....", "RESUMED");
     }
 
@@ -297,13 +312,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback, Rou
             super.onLocationResult(locationResult);
             Log.v("LocationCallback", "UPDATING LOCATION");
             for (Location location : locationResult.getLocations()){
-
-                LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-                //LatLng latLng = new LatLng(29.986926, 31.440630);
-
-                if(! GucPoints.GUC.contains(latLng)){
-                    Toast.makeText(getContext(), "You are not inside the GUC campus", Toast.LENGTH_LONG).show();
-                }
+                lastLocation = new LatLng(location.getLatitude(), location.getLongitude());
             }
         }
     };
