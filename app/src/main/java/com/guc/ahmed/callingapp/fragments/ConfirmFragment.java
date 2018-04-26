@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Build;
@@ -28,6 +29,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.akexorcist.googledirection.DirectionCallback;
+import com.akexorcist.googledirection.GoogleDirection;
+import com.akexorcist.googledirection.constant.TransportMode;
+import com.akexorcist.googledirection.model.Direction;
+import com.akexorcist.googledirection.model.Leg;
+import com.akexorcist.googledirection.util.DirectionConverter;
 import com.dd.processbutton.iml.ActionProcessButton;
 import com.gitonway.lee.niftymodaldialogeffects.lib.NiftyDialogBuilder;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -63,7 +70,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class ConfirmFragment extends Fragment implements OnMapReadyCallback, RoutingListener {
+public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private View view;
@@ -226,11 +233,6 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback, Rou
 
         boolean success = googleMap.setMapStyle(new MapStyleOptions(getResources()
                 .getString(R.string.style_json)));
-
-        if (!success) {
-            Log.e("PickupFragment", "Style parsing failed.");
-        }
-
         // Constrain the camera target to the Adelaide bounds.
         mMap.setLatLngBoundsForCameraTarget(GucPoints.GUC);
 
@@ -263,19 +265,35 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback, Rou
     }
 
     private void drawTripRoute() {
-
         List<LatLng> waypoints = new ArrayList<>();
-        waypoints.add(requestTrip.getPickupLocation());
         for (LatLng latLng : requestTrip.getDestinations()){
             waypoints.add(latLng);
         }
-        Routing routing = new Routing.Builder()
-                .travelMode(AbstractRouting.TravelMode.DRIVING)
-                .withListener(this)
-                .alternativeRoutes(false)
-                .waypoints(waypoints)
-                .build();
-        routing.execute();
+        GoogleDirection.withServerKey(getResources().getString(R.string.google_maps_key))
+                .from(requestTrip.getPickupLocation())
+                .and(waypoints)
+                .to(waypoints.get(waypoints.size()-1))
+                .transportMode(TransportMode.DRIVING)
+                .execute(new DirectionCallback() {
+                    @Override
+                    public void onDirectionSuccess(Direction direction, String rawBody) {
+                        if(direction.isOK()) {
+                            com.akexorcist.googledirection.model.Route route = direction.getRouteList().get(0);
+                            for (Leg leg : route.getLegList()) {
+                                ArrayList<LatLng> directionPositionList = leg.getDirectionPoint();
+                                PolylineOptions polylineOptions = DirectionConverter.createPolyline(getContext(), directionPositionList, 3, Color.GRAY);
+                                mMap.addPolyline(polylineOptions);
+                            }
+                        } else {
+                            // Do something
+                        }
+                    }
+
+                    @Override
+                    public void onDirectionFailure(Throwable t) {
+                        // Do something
+                    }
+                });
 
     }
 
@@ -359,48 +377,6 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback, Rou
             }
                 break;
         }
-    }
-
-    @Override
-    public void onRoutingFailure(RouteException e) {
-        if(e != null) {
-            Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }else {
-            Toast.makeText(getContext(), "Something went wrong, Try again", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    public void onRoutingStart() {
-
-    }
-
-    @Override
-    public void onRoutingSuccess(List<Route> route, int shortestRouteIndex) {
-        if(polylines.size()>0) {
-            for (Polyline poly : polylines) {
-                poly.remove();
-            }
-        }
-
-        polylines = new ArrayList<>();
-        //add route(s) to the map.
-        for (int i = 0; i <route.size(); i++) {
-
-            PolylineOptions polyOptions = new PolylineOptions();
-            polyOptions.color(getResources().getColor(R.color.text_black));
-            polyOptions.width(10 + i * 3);
-            polyOptions.addAll(route.get(i).getPoints());
-            Polyline polyline = mMap.addPolyline(polyOptions);
-            polylines.add(polyline);
-
-            Toast.makeText(getContext(),"Route "+ (i+1) +": distance - "+ route.get(i).getDistanceValue()+": duration - "+ route.get(i).getDurationValue(),Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    public void onRoutingCancelled() {
-
     }
 
     public void setRequestTrip(Trip requestTrip) {
