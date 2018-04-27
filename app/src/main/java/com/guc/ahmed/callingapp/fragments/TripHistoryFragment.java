@@ -85,12 +85,14 @@ public class TripHistoryFragment extends Fragment {
 
     private Profile getProfile(String gmail) {
         String url = getResources().getString(R.string.url_get_profile) + gmail;
+        Log.v("TripHistory", url);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
                 (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
+                        Log.v("TripHistory", "It worked");
                         profile = gson.fromJson(response.toString(), Profile.class);
                         tripHistory = getTripHistory();
                         mAdapter.notifyDataSetChanged();
@@ -99,7 +101,7 @@ public class TripHistoryFragment extends Fragment {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-
+                        Log.v("TripHistory", "It didnt work");
                     }
                 });
 

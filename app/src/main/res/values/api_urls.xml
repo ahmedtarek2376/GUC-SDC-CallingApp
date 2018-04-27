@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="url_get_profile">http://10.0.2.2:8080/profile/find/</string>
-    <string name="url_verify_profile">http://10.0.2.2:8080/profile/verify/</string>
+    <!--10.0.2.2-->
+    <!--192.168.43.6-->
+    <string name="url_get_profile">http://192.168.43.6:8080/profile/find/</string>
+    <string name="url_verify_profile">http://192.168.43.6:8080/profile/verify/</string>
 </resources>

@@ -66,6 +66,6 @@ public class VerificationAsync extends AsyncTask<Object,String,String> {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        TextView textView = (TextView) activity.findViewById(R.id.textView);
+        //TextView textView = (TextView) activity.findViewById(R.id.textView);
     }
 }

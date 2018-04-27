@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -66,6 +67,9 @@ public class MainActivity extends AppCompatActivity
     private ConfirmFragment confirmFragment;
     private PickupFragment pickupFragment;
     private Alert alert;
+
+    private TextView navName;
+    private TextView navEmail;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -140,6 +144,12 @@ public class MainActivity extends AppCompatActivity
 
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        View headerView = navigationView.getHeaderView(0);
+        navName =  headerView.findViewById(R.id.nav_name);
+        navName.setText(mAuth.getCurrentUser().getDisplayName());
+        navEmail = headerView.findViewById(R.id.nav_email);
+        navEmail.setText(mAuth.getCurrentUser().getEmail());
     }
 
     @Override
@@ -158,7 +168,6 @@ public class MainActivity extends AppCompatActivity
             alert = Alerter.create(this)
                     .setTitle("No Internet Connection !!")
                     .setText("Please enable internet connection to proceed. Click to dismiss when internet connection is available.")
-                    .disableOutsideTouch()
                     .enableIconPulse(true)
                     .setBackgroundColorRes(R.color.red_error)
                     .enableInfiniteDuration(true)
@@ -205,7 +214,7 @@ public class MainActivity extends AppCompatActivity
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
             if(currentFragment instanceof PickupFragment){
                 Log.v("TESTTT", "ANA pickup !!!");
-                super.onBackPressed();
+                finish();
             } else if(currentFragment instanceof DestinationFragment){
                 Log.v("TESTTT", "ANA destination !!!");
                 pickupFragment = new PickupFragment();
@@ -272,13 +281,18 @@ public class MainActivity extends AppCompatActivity
             mAuth.signOut();
         } else if (id == R.id.nav_share) {
 
+        }else if (id == R.id.nav_home) {
+            pickupFragment = new PickupFragment();
+            pickupFragment.setRequestTrip(requestTrip);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, pickupFragment, "PICKUP_FRAGMENT").commit();
         } else if (id == R.id.nav_send) {
 
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
-        return true;
+        return false;
     }
 
 
