@@ -260,7 +260,11 @@ public class MainActivity extends AppCompatActivity
                     .addToBackStack(null).commit();
 
         } else if (id == R.id.nav_history) {
+            Bundle bundle = new Bundle();
+            bundle.putString("gmail", mAuth.getCurrentUser().getEmail());
             TripHistoryFragment fragment = new TripHistoryFragment();
+            fragment.setArguments(bundle);
+
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, fragment, "TRIP_HISTORY_FRAGMENT")
                     .addToBackStack(null).commit();
