@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity
     private NavigationView navigationView;
     private Toolbar toolbar;
     private  FirebaseAuth.AuthStateListener mAuthStateListener;
-    private FirebaseAuth mAuth;
+    public static FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
 
     private Trip requestTrip;

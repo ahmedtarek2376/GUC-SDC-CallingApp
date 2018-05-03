@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
@@ -36,6 +37,11 @@ import com.akexorcist.googledirection.model.Direction;
 import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.util.DirectionConverter;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.dd.processbutton.iml.ActionProcessButton;
 import com.gitonway.lee.niftymodaldialogeffects.lib.NiftyDialogBuilder;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -55,16 +61,28 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.guc.ahmed.callingapp.MainActivity;
 import com.guc.ahmed.callingapp.R;
+import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
 import com.guc.ahmed.callingapp.classes.Trip;
+import com.guc.ahmed.callingapp.fcm.MyFirebaseInstanceIDService;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
 import com.guc.ahmed.callingapp.gucpoints.GucPoints;
 import com.guc.ahmed.callingapp.map.CustomMarker;
 import com.tapadoo.alerter.Alerter;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
 
@@ -91,6 +109,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
     private TextView destination1Txt;
     private TextView destination2Txt;
     private TextView destination3Txt;
+    private Gson gson;
 
     public ConfirmFragment() {
         // Required empty public constructor
@@ -134,6 +153,9 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
         markers = new HashMap<>();
         polylines = new ArrayList<>();
 
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gson = gsonBuilder.create();
+
         return view;
     }
 
@@ -158,6 +180,39 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
         @Override
         public void onClick(View view) {
             button.setProgress(1);
+
+            requestTrip.setUserID(MainActivity.mAuth.getCurrentUser().getEmail());
+            requestTrip.setUserFcmToken(FirebaseInstanceId.getInstance().getToken());
+
+            String str = gson.toJson(requestTrip);
+            JSONObject trip = new JSONObject();
+            try {
+                trip = new JSONObject(str);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            String url = getResources().getString(R.string.url_request_trip);
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
+                    (Request.Method.POST, url, trip, new Response.Listener<JSONObject>() {
+
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            Log.v("Confirmed Trip", response.toString());
+                            Toast.makeText(getContext(),"Trip successfully requested.",Toast.LENGTH_SHORT).show();
+                            Trip createdTrip = gson.fromJson(response.toString(),Trip.class);
+                        }
+                    }, new Response.ErrorListener() {
+
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+
+                        }
+                    });
+
+            // Access the RequestQueue through your singleton class.
+            MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
+
         }
     };
 

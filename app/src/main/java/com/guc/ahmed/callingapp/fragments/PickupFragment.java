@@ -310,7 +310,7 @@ public class PickupFragment extends Fragment
                 // Access the RequestQueue through your singleton class.
                 MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
 
-                carhandler.postDelayed(updateCars, 3000);
+                carhandler.postDelayed(updateCars, 2000);
             }
         };
 
@@ -356,6 +356,9 @@ public class PickupFragment extends Fragment
 
         @Override
         public boolean onMarkerClick(Marker marker) {
+            if(marker.getTitle().equalsIgnoreCase("CAR") ){
+                return true;
+            }
 
             CustomMarker customMarker = new CustomMarker(getContext());
             if(selectedMarker != null){

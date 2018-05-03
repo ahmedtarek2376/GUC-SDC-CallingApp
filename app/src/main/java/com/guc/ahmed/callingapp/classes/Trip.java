@@ -7,32 +7,29 @@ import java.util.Date;
 import java.util.List;
 
 public class Trip {
-    private String id;
+	private String id;
+
 	private Date requestTime;
 	private Date startTime;
 	private Date endTime;
 	private Date cancelTime;
-	
+
 	private LatLng pickupLocation;
-	private ArrayList<LatLng> destinations;
-	
+	private List<LatLng> destinations;
+
 	private String carID;
+	private String carFcmToken;
 	private String userID;
-	
+	private String userFcmToken;
+	private String tabletFcmToken;
+
 	public Trip() {
 	}
-	
-	public Trip(String userID, LatLng pickupLocation, ArrayList<LatLng> destinations) {
-		this.userID = userID;
-		this.pickupLocation = pickupLocation;
-		this.destinations = destinations;
-	}
 
-	public Trip(Date requestTime, Date startTime, Date endTime, Date cancelTime, LatLng pickupLocation, ArrayList<LatLng> destinations) {
-		this.requestTime = requestTime;
-		this.startTime = startTime;
-		this.endTime = endTime;
-		this.cancelTime = cancelTime;
+	public Trip(String carID, String userID, LatLng pickupLocation, List<LatLng> destinations) {
+		this.requestTime = new Date();
+		this.carID = carID;
+		this.userID = userID;
 		this.pickupLocation = pickupLocation;
 		this.destinations = destinations;
 	}
@@ -73,11 +70,11 @@ public class Trip {
 		this.pickupLocation = pickupLocation;
 	}
 
-	public ArrayList<LatLng> getDestinations() {
+	public List<LatLng> getDestinations() {
 		return destinations;
 	}
 
-	public void setDestinations(ArrayList<LatLng> destinations) {
+	public void setDestinations(List<LatLng> destinations) {
 		this.destinations = destinations;
 	}
 
@@ -103,6 +100,30 @@ public class Trip {
 
 	public void setCancelTime(Date cancelTime) {
 		this.cancelTime = cancelTime;
+	}
+
+	public String getCarFcmToken() {
+		return carFcmToken;
+	}
+
+	public void setCarFcmToken(String carFcmToken) {
+		this.carFcmToken = carFcmToken;
+	}
+
+	public String getUserFcmToken() {
+		return userFcmToken;
+	}
+
+	public void setUserFcmToken(String userFcmToken) {
+		this.userFcmToken = userFcmToken;
+	}
+
+	public String getTabletFcmToken() {
+		return tabletFcmToken;
+	}
+
+	public void setTabletFcmToken(String tabletFcmToken) {
+		this.tabletFcmToken = tabletFcmToken;
 	}
 
 }
