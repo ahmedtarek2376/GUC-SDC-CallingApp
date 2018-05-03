@@ -11,6 +11,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -29,6 +30,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.dd.processbutton.iml.ActionProcessButton;
 import com.gitonway.lee.niftymodaldialogeffects.lib.NiftyDialogBuilder;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -47,13 +53,21 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.guc.ahmed.callingapp.R;
+import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
+import com.guc.ahmed.callingapp.classes.Profile;
 import com.guc.ahmed.callingapp.classes.Trip;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
 import com.guc.ahmed.callingapp.gucpoints.GucPoints;
 import com.guc.ahmed.callingapp.map.CustomMarker;
 import com.tapadoo.alerter.Alert;
 import com.tapadoo.alerter.Alerter;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,8 +83,6 @@ public class PickupFragment extends Fragment
     private LocationRequest locationRequest;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private HashMap<String,Marker> markers;
-    private NiftyDialogBuilder dialogBuilder;
-    private List<Polyline> polylines;
     private Marker selectedMarker;
     private PickupFragment.OnPickupLocationListener onPickupLocationListener;
 
@@ -82,6 +94,9 @@ public class PickupFragment extends Fragment
     private ActionBar actionBar;
     private Trip requestTrip;
     private Alert alert;
+    private Handler carhandler;
+    private Runnable updateCars;
+    private Gson gson;
 
     public void setRequestTrip(Trip requestTrip) {
         this.requestTrip = requestTrip;
@@ -101,7 +116,6 @@ public class PickupFragment extends Fragment
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
-        dialogBuilder=NiftyDialogBuilder.getInstance(getContext());
 
         button = (ActionProcessButton) view.findViewById(R.id.pickup_btn);
         button.setMode(ActionProcessButton.Mode.ENDLESS);
@@ -127,7 +141,9 @@ public class PickupFragment extends Fragment
         mapFragment.getMapAsync(this);
 
         markers = new HashMap<>();
-        polylines = new ArrayList<>();
+
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gson = gsonBuilder.create();
 
         return view;
     }
@@ -162,6 +178,8 @@ public class PickupFragment extends Fragment
         view.setLayoutParams(params);
         snackbar.show();
 
+        resumeCarsUpdates();
+
         Log.v("PICKUP", "onREsume");
     }
 
@@ -170,6 +188,7 @@ public class PickupFragment extends Fragment
         super.onPause();
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
         Alerter.clearCurrent(getActivity());
+        stopCarsUpdates();
         Log.v("PICKUP", "onPause");
     }
 
@@ -213,6 +232,8 @@ public class PickupFragment extends Fragment
         mMap.setLatLngBoundsForCameraTarget(GucPoints.GUC);
 
         addMarkersToMap();
+        
+        addCarsToMap();
 
 //        Polygon polygon = mMap.addPolygon(
 //                gucBorders
@@ -248,6 +269,86 @@ public class PickupFragment extends Fragment
         }else {
             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
             mMap.setMyLocationEnabled(true);
+        }
+    }
+
+    private void addCarsToMap() {
+        carhandler = new Handler();
+
+        updateCars = new Runnable() {
+            @Override
+            public void run() {
+
+                String url = getResources().getString(R.string.url_get_available_cars);
+                JsonArrayRequest jsonObjectRequest = new JsonArrayRequest
+                        (Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
+
+                            @Override
+                            public void onResponse(JSONArray response) {
+                                Log.v("AvailableCars", response.toString());
+
+                                for(int i=0;i<response.length();i++){
+
+                                    try {
+                                        JSONObject object = response.getJSONObject(i);
+                                        String carID = object.getString("carID");
+                                        LatLng latLng = gson.fromJson(object.getJSONObject("latLng").toString(), LatLng.class);
+                                        drawCarMarker(carID,latLng);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        }, new Response.ErrorListener() {
+
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+
+                            }
+                        });
+
+                // Access the RequestQueue through your singleton class.
+                MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
+
+                carhandler.postDelayed(updateCars, 3000);
+            }
+        };
+
+        carhandler.postDelayed(updateCars, 0);
+
+    }
+
+    private void drawCarMarker(String carID, LatLng latLng) {
+
+        Log.v("carID", carID);
+        Log.v("carLatLng", latLng.toString());
+        Marker marker = markers.get(carID);
+
+        if(marker != null){
+            LatLng position = marker.getPosition();
+            if(! position.equals(latLng)){ //Car has moved
+                marker.setPosition(latLng);
+            }
+        } else {
+            CustomMarker customMarker = new CustomMarker(getContext());
+            customMarker.setImage(R.drawable.ic_directions_car_black_24dp);
+            markers.put( carID,
+                    mMap.addMarker(new MarkerOptions().position(latLng)
+                            .title("CAR").icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())))
+            );
+        }
+
+    }
+
+    public void stopCarsUpdates() {
+        if(carhandler!=null){
+            carhandler.removeCallbacks(updateCars);
+        }
+    }
+
+    public void resumeCarsUpdates() {
+        if(carhandler!=null && updateCars!=null && mMap!=null){
+            carhandler.post(updateCars);
         }
     }
 

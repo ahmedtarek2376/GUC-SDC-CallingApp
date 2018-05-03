@@ -34,6 +34,7 @@ import com.akexorcist.googledirection.GoogleDirection;
 import com.akexorcist.googledirection.constant.TransportMode;
 import com.akexorcist.googledirection.model.Direction;
 import com.akexorcist.googledirection.model.Leg;
+import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.util.DirectionConverter;
 import com.dd.processbutton.iml.ActionProcessButton;
 import com.gitonway.lee.niftymodaldialogeffects.lib.NiftyDialogBuilder;
@@ -59,11 +60,6 @@ import com.guc.ahmed.callingapp.classes.Trip;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
 import com.guc.ahmed.callingapp.gucpoints.GucPoints;
 import com.guc.ahmed.callingapp.map.CustomMarker;
-import com.guc.ahmed.callingapp.route.AbstractRouting;
-import com.guc.ahmed.callingapp.route.Route;
-import com.guc.ahmed.callingapp.route.RouteException;
-import com.guc.ahmed.callingapp.route.Routing;
-import com.guc.ahmed.callingapp.route.RoutingListener;
 import com.tapadoo.alerter.Alerter;
 
 import java.util.ArrayList;
@@ -278,7 +274,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
                     @Override
                     public void onDirectionSuccess(Direction direction, String rawBody) {
                         if(direction.isOK()) {
-                            com.akexorcist.googledirection.model.Route route = direction.getRouteList().get(0);
+                            Route route = direction.getRouteList().get(0);
                             for (Leg leg : route.getLegList()) {
                                 ArrayList<LatLng> directionPositionList = leg.getDirectionPoint();
                                 PolylineOptions polylineOptions = DirectionConverter.createPolyline(getContext(), directionPositionList, 3, Color.GRAY);

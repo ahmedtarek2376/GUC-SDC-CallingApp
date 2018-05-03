@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity
         checkPlayServices();
 
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
-        Log.d("Main Activity", "FirebaseInstanceId Token: " + refreshedToken);
+        Log.v("MainActivity", "FirebaseInstanceId Token: " + refreshedToken);
 
         pickupFragment = new PickupFragment();
         getSupportFragmentManager().beginTransaction()

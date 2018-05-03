@@ -60,17 +60,24 @@
                     android:layout_centerHorizontal="true"
                     android:layout_centerVertical="true"
                     />
-
-                <android.support.v7.widget.RecyclerView
-                    android:id="@+id/destination_recycler_view"
-                    android:layout_toRightOf="@id/icon_1"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_toRightOf="@id/icon_1"
                     android:layout_alignParentTop="true"
                     android:layout_centerHorizontal="true"
                     android:layout_centerVertical="true"
                     android:layout_marginRight="10dp"
-                    android:visibility="gone"/>
+                    android:visibility="gone"
+                    android:orientation="vertical"
+                    android:id="@+id/recycler_layout">
+
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/destination_recycler_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
 
                 <TextView
                     android:layout_width="0dp"
@@ -79,7 +86,7 @@
                     android:textSize="16sp"
                     android:textAlignment="center"
                     android:layout_centerVertical="true"
-                    android:layout_toRightOf="@id/destination_recycler_view"
+                    android:layout_toRightOf="@id/recycler_layout"
                     android:visibility="invisible"
                     />
 

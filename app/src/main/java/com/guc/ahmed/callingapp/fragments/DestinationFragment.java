@@ -91,6 +91,7 @@ public class DestinationFragment extends Fragment
     private RecyclerView.LayoutManager mLayoutManager;
     private ArrayList<GucPlace> chosenDestinations;
     private ItemTouchHelper mItemTouchHelper;
+    private LinearLayout recyclerLayout;
     private Alert alert;
 
     public DestinationFragment() {
@@ -135,6 +136,8 @@ public class DestinationFragment extends Fragment
         }
 
         ////////////////////////////////Recycler View//////////////////////////////////////
+        recyclerLayout = view.findViewById(R.id.recycler_layout);
+
         mRecyclerView = (RecyclerView) view.findViewById(R.id.destination_recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(getContext(), LinearLayout.HORIZONTAL, false);
@@ -146,7 +149,7 @@ public class DestinationFragment extends Fragment
                arrayList.add( GucPoints.getGucPlaceByLatLng(latLng) );
             }
             destinationTxt.setVisibility(View.GONE);
-            mRecyclerView.setVisibility(View.VISIBLE);
+            recyclerLayout.setVisibility(View.VISIBLE);
             chosenDestinations = arrayList;
         }else{
             chosenDestinations = new ArrayList<>();
@@ -342,7 +345,7 @@ public class DestinationFragment extends Fragment
         if(chosenDestinations.size() != 3 && !(chosenDestinations.contains(gucPlace))){
             chosenDestinations.add(gucPlace);
             mAdapter.notifyItemInserted(chosenDestinations.size() - 1);
-            mRecyclerView.setVisibility(View.VISIBLE);
+            recyclerLayout.setVisibility(View.VISIBLE);
             return true;
         }else {
             return false;
@@ -588,7 +591,7 @@ public class DestinationFragment extends Fragment
                         notifyItemRemoved(getAdapterPosition());
                         notifyItemRangeChanged(getAdapterPosition(),chosenDestinations.size());
                         if(getItemCount()==0){
-                            mRecyclerView.setVisibility(View.GONE);
+                            recyclerLayout.setVisibility(View.GONE);
                             destinationTxt.setVisibility(View.VISIBLE);
                         }
                         addMarkersToMap();
