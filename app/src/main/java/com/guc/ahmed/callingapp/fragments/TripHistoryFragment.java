@@ -22,6 +22,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.guc.ahmed.callingapp.MainActivity;
 import com.guc.ahmed.callingapp.R;
 import com.guc.ahmed.callingapp.adapter.EditItemTouchHelperCallback;
 import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
@@ -112,25 +113,6 @@ public class TripHistoryFragment extends Fragment {
     }
 
     private List<Trip> getTripHistory() {
-
-//        final LatLng b3 = GucPoints.getGucPlaceByName(GucPoints.B3_U_AREA.getName()).getLatLng();
-//        final LatLng gym = GucPoints.getGucPlaceByName(GucPoints.GUC_GYM.getName()).getLatLng();
-//        final LatLng gate1= GucPoints.getGucPlaceByName(GucPoints.GATE_1.getName()).getLatLng();
-//        final LatLng d4 = GucPoints.getGucPlaceByName(GucPoints.D4_U_AREA.getName()).getLatLng();
-//
-//        Trip trip1 = new Trip(new Date(), new Date(), new Date(), null, b3 , new ArrayList<LatLng>(){{ add(gym);}} );
-//        Trip trip2 = new Trip(new Date(), new Date(), null, new Date(), gate1 , new ArrayList<LatLng>(){{ add(d4);}} );
-//        Trip trip3 = new Trip(new Date(), new Date(), null, new Date(), d4 , new ArrayList<LatLng>(){{ add(gate1); add(gym); add(b3);}} );
-//        Trip trip4 = new Trip(new Date(), new Date(), new Date(), null, b3 , new ArrayList<LatLng>(){{ add(gate1);}} );
-//        Trip trip5 = new Trip(new Date(), new Date(), null, new Date(), gym , new ArrayList<LatLng>(){{ add(d4); add(gate1);}} );
-//        Trip trip6 = new Trip(new Date(), new Date(), new Date(), null, d4 , new ArrayList<LatLng>(){{ add(gate1);}} );
-//        Trip trip7 = new Trip(new Date(), new Date(), new Date(), null, b3 , new ArrayList<LatLng>(){{ add(gym);}} );
-//        Trip trip8 = new Trip(new Date(), new Date(), new Date(), null, gate1 , new ArrayList<LatLng>(){{ add(d4); add(b3); add(gym);}} );
-//
-//        ArrayList<Trip> arrayList = new ArrayList<>();
-//        arrayList.addAll(Arrays.asList(trip1,trip2,trip3,trip4,trip5,trip6,trip7,trip8));
-//
-//        return arrayList;
         return profile.getTripHistory();
     }
 
@@ -152,26 +134,35 @@ public class TripHistoryFragment extends Fragment {
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             Trip trip = tripHistory.get(position);
-            holder.pickupTxt.setText(GucPoints.getGucPlaceByLatLng(trip.getPickupLocation()).getName());
+            holder.pickupTxt.setText(getGucPlaceByLatLng(trip.getPickupLocation()).getName());
             if(trip.getCancelTime() != null){
                 holder.tripStatus.setText("Canceled");
             }else if(tripHistory.get(position).getEndTime() != null){
                 holder.tripStatus.setText("Completed");
             }
-            holder.destination1Txt.setText(GucPoints.getGucPlaceByLatLng(trip.getDestinations().get(0)).getName());
+            holder.destination1Txt.setText(getGucPlaceByLatLng(trip.getDestinations().get(0)).getName());
             if(trip.getDestinations().size() == 2){
-                holder.destination2Txt.setText(GucPoints.getGucPlaceByLatLng(trip.getDestinations().get(1)).getName());
+                holder.destination2Txt.setText(getGucPlaceByLatLng(trip.getDestinations().get(1)).getName());
                 holder.destination2.setVisibility(View.VISIBLE);
                 holder.dot1to2.setVisibility(View.VISIBLE);
             }else if(trip.getDestinations().size() == 3){
-                holder.destination2Txt.setText(GucPoints.getGucPlaceByLatLng(trip.getDestinations().get(1)).getName());
-                holder.destination3Txt.setText(GucPoints.getGucPlaceByLatLng(trip.getDestinations().get(2)).getName());
+                holder.destination2Txt.setText(getGucPlaceByLatLng(trip.getDestinations().get(1)).getName());
+                holder.destination3Txt.setText(getGucPlaceByLatLng(trip.getDestinations().get(2)).getName());
                 holder.destination2.setVisibility(View.VISIBLE);
                 holder.dot1to2.setVisibility(View.VISIBLE);
                 holder.destination3.setVisibility(View.VISIBLE);
                 holder.dot2to3.setVisibility(View.VISIBLE);
             }
 
+        }
+
+        public GucPlace getGucPlaceByLatLng(LatLng latLng){
+            for (GucPlace place : MainActivity.gucPlaces){
+                if(place.getLatLng().equals(latLng)){
+                    return place;
+                }
+            }
+            return null;
         }
 
         @Override

@@ -55,6 +55,7 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.guc.ahmed.callingapp.MainActivity;
 import com.guc.ahmed.callingapp.R;
 import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
 import com.guc.ahmed.callingapp.classes.Profile;
@@ -97,6 +98,7 @@ public class PickupFragment extends Fragment
     private Handler carhandler;
     private Runnable updateCars;
     private Gson gson;
+    private ArrayList<GucPlace> gucPlaces;
 
     public void setRequestTrip(Trip requestTrip) {
         this.requestTrip = requestTrip;
@@ -144,6 +146,8 @@ public class PickupFragment extends Fragment
 
         GsonBuilder gsonBuilder = new GsonBuilder();
         gson = gsonBuilder.create();
+
+        gucPlaces = MainActivity.gucPlaces;
 
         return view;
     }
@@ -232,7 +236,7 @@ public class PickupFragment extends Fragment
         mMap.setLatLngBoundsForCameraTarget(GucPoints.GUC);
 
         addMarkersToMap();
-        
+
         addCarsToMap();
 
 //        Polygon polygon = mMap.addPolygon(
@@ -310,7 +314,7 @@ public class PickupFragment extends Fragment
                 // Access the RequestQueue through your singleton class.
                 MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
 
-                carhandler.postDelayed(updateCars, 2000);
+                carhandler.postDelayed(updateCars, 3000);
             }
         };
 
@@ -372,13 +376,21 @@ public class PickupFragment extends Fragment
             customMarker.setText(marker.getTitle());
             marker.setIcon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView()));
 
-            GucPlace gucPlace = GucPoints.getGucPlaceByName(marker.getTitle());
-            //onPickupLocationListener.onPickupMarkerSelected(gucPlace);
+            GucPlace gucPlace = getGucPlaceByName(marker.getTitle());
             updatePickupLocation(gucPlace);
 
             return true;
         }
     };
+
+    public GucPlace getGucPlaceByName(String name){
+        for (GucPlace place : gucPlaces){
+            if(place.getName().equalsIgnoreCase(name)){
+                return place;
+            }
+        }
+        return null;
+    }
 
     private View.OnClickListener confirmPickupOnClickListener = new View.OnClickListener() {
         @Override
@@ -443,56 +455,50 @@ public class PickupFragment extends Fragment
     }
 
     public void addMarkersToMap(){
+
+        String url = getResources().getString(R.string.url_get_pins);
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest
+                (Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
+
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        gucPlaces = new ArrayList<>();
+
+                        for(int i=0;i<response.length();i++){
+                            try {
+                                JSONObject object = response.getJSONObject(i);
+                                GucPlace place = gson.fromJson(object.toString(), GucPlace.class);
+                                gucPlaces.add(place);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        drawPins(gucPlaces);
+                        MainActivity.gucPlaces = gucPlaces;
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                });
+
+        // Access the RequestQueue through your singleton class.
+        MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonArrayRequest);
+
+    }
+
+    private void drawPins(ArrayList<GucPlace> places) {
         CustomMarker customMarker = new CustomMarker(getContext());
         customMarker.setImage(R.drawable.custom_marker_pin);
-
-        customMarker.setText(GucPoints.D4_U_AREA.getName());
-        markers.put( GucPoints.D4_U_AREA.getName(),
-                mMap.addMarker(new MarkerOptions().position(GucPoints.D4_U_AREA.getLatLng())
-                        .title(GucPoints.D4_U_AREA.getName()).icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())))
-        );
-
-        customMarker.setText(GucPoints.C3_U_AREA.getName());
-        markers.put( GucPoints.C3_U_AREA.getName(),
-                mMap.addMarker(new MarkerOptions().position(GucPoints.C3_U_AREA.getLatLng())
-                        .title(GucPoints.C3_U_AREA.getName()).icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())))
-        );
-
-        customMarker.setText(GucPoints.C6_U_AREA.getName());
-        markers.put( GucPoints.C6_U_AREA.getName(),
-                mMap.addMarker(new MarkerOptions().position(GucPoints.C6_U_AREA.getLatLng())
-                        .title(GucPoints.C6_U_AREA.getName()).icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())))
-        );
-
-        customMarker.setText(GucPoints.B3_U_AREA.getName());
-        markers.put( GucPoints.B3_U_AREA.getName(),
-                mMap.addMarker(new MarkerOptions().position(GucPoints.B3_U_AREA.getLatLng())
-                        .title(GucPoints.B3_U_AREA.getName()).icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())))
-        );
-
-        customMarker.setText(GucPoints.GUC_GYM.getName());
-        markers.put( GucPoints.GUC_GYM.getName(),
-                mMap.addMarker(new MarkerOptions().position(GucPoints.GUC_GYM.getLatLng())
-                        .title(GucPoints.GUC_GYM.getName()).icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())))
-        );
-
-        customMarker.setText(GucPoints.GATE_1.getName());
-        markers.put( GucPoints.GATE_1.getName(),
-                mMap.addMarker(new MarkerOptions().position(GucPoints.GATE_1.getLatLng())
-                        .title(GucPoints.GATE_1.getName()).icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())))
-        );
-
-        customMarker.setText(GucPoints.GATE_3.getName());
-        markers.put( GucPoints.GATE_3.getName(),
-                mMap.addMarker(new MarkerOptions().position(GucPoints.GATE_3.getLatLng())
-                        .title(GucPoints.GATE_3.getName()).icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())))
-        );
-
-        customMarker.setText(GucPoints.GATE_4.getName());
-        markers.put( GucPoints.GATE_4.getName(),
-                mMap.addMarker(new MarkerOptions().position(GucPoints.GATE_4.getLatLng())
-                        .title(GucPoints.GATE_4.getName()).icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())))
-        );
+        for (GucPlace place : places){
+            customMarker.setText(place.getName());
+            markers.put( place.getName(),
+                    mMap.addMarker(new MarkerOptions().position(place.getLatLng())
+                            .title(place.getName()).icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())))
+            );
+        }
     }
 
     LocationCallback locationCallback = new LocationCallback(){

@@ -12,6 +12,7 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -25,6 +26,10 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -35,6 +40,9 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
 import com.guc.ahmed.callingapp.classes.Trip;
 import com.guc.ahmed.callingapp.fragments.ConfirmFragment;
 import com.guc.ahmed.callingapp.fragments.DestinationFragment;
@@ -44,6 +52,10 @@ import com.guc.ahmed.callingapp.fragments.ValidateFragment;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
 import com.tapadoo.alerter.Alert;
 import com.tapadoo.alerter.Alerter;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +82,8 @@ public class MainActivity extends AppCompatActivity
 
     private TextView navName;
     private TextView navEmail;
+    private Gson gson;
+    public static ArrayList<GucPlace> gucPlaces;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -94,6 +108,7 @@ public class MainActivity extends AppCompatActivity
         Log.v("Account Verified = " ,accountVerified + "");
 
         requestTrip = new Trip();
+        gucPlaces = new ArrayList<>();
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -150,6 +165,10 @@ public class MainActivity extends AppCompatActivity
         navName.setText(mAuth.getCurrentUser().getDisplayName());
         navEmail = headerView.findViewById(R.id.nav_email);
         navEmail.setText(mAuth.getCurrentUser().getEmail());
+
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gson = gsonBuilder.create();
+
     }
 
     @Override
@@ -169,6 +188,7 @@ public class MainActivity extends AppCompatActivity
                     .setTitle("No Internet Connection !!")
                     .setText("Please enable internet connection to proceed. Click to dismiss when internet connection is available.")
                     .enableIconPulse(true)
+                    .disableOutsideTouch()
                     .setBackgroundColorRes(R.color.red_error)
                     .enableInfiniteDuration(true)
                     .setOnClickListener(new View.OnClickListener() {
@@ -176,6 +196,8 @@ public class MainActivity extends AppCompatActivity
                         public void onClick(View view) {
                             if(isNetworkStatusAvialable(getApplicationContext())){
                                 alert.hide();
+                                Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+                                getSupportFragmentManager().beginTransaction().detach(currentFragment).attach(currentFragment).commit();
                             }
                         }
                     })
