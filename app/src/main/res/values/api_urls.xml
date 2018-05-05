@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="url_get_profile">https://sdc-trip-car-management.herokuapp.com/profile/find/</string>
-    <string name="url_verify_profile">https://sdc-trip-car-management.herokuapp.com/profile/verify/</string>
+    <string name="url_get_profile">https://sdc-profile-management.herokuapp.com/profile/find/</string>
+    <string name="url_verify_profile">https://sdc-profile-management.herokuapp.com/profile/verify/</string>
     <string name="url_get_available_cars">https://sdc-trip-car-management.herokuapp.com/car/find/all/available</string>
     <string name="url_request_trip">https://sdc-trip-car-management.herokuapp.com/trip/create</string>
     <string name="url_get_pins">https://sdc-trip-car-management.herokuapp.com/guc/pins</string>
