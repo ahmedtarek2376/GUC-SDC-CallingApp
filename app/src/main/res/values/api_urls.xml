@@ -3,10 +3,10 @@
     <!--10.0.2.2-->
     <!--192.168.43.6-->
     <!--192.168.1.8-->
-    <string name="url_get_profile">http://192.168.1.5:8081/profile/find/</string>
-    <string name="url_verify_profile">http://192.168.1.5:8081/profile/verify/</string>
-    <string name="url_get_available_cars">http://192.168.1.5:8080/car/find/all/available</string>
-    <string name="url_request_trip">http://192.168.1.5:8080/trip/create</string>
-    <string name="url_get_pins">http://192.168.1.5:8080/guc/pins</string>
+    <string name="url_get_profile">https://sdc-trip-car-management.herokuapp.com/profile/find/</string>
+    <string name="url_verify_profile">https://sdc-trip-car-management.herokuapp.com/profile/verify/</string>
+    <string name="url_get_available_cars">https://sdc-trip-car-management.herokuapp.com/car/find/all/available</string>
+    <string name="url_request_trip">https://sdc-trip-car-management.herokuapp.com/trip/create</string>
+    <string name="url_get_pins">https://sdc-trip-car-management.herokuapp.com/guc/pins</string>
 
 </resources>
