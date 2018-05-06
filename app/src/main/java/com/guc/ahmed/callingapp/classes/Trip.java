@@ -10,6 +10,7 @@ public class Trip {
 	private String id;
 
 	private Date requestTime;
+	private Date carArriveTime;
 	private Date startTime;
 	private Date endTime;
 	private Date cancelTime;
@@ -126,4 +127,11 @@ public class Trip {
 		this.tabletFcmToken = tabletFcmToken;
 	}
 
+	public Date getCarArriveTime() {
+		return carArriveTime;
+	}
+
+	public void setCarArriveTime(Date carArriveTime) {
+		this.carArriveTime = carArriveTime;
+	}
 }

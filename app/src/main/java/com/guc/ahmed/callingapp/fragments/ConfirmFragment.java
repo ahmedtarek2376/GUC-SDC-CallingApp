@@ -176,6 +176,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
         }
     }
 
+    private Trip createdTrip;
     private View.OnClickListener requestTripButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -200,7 +201,8 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
                         public void onResponse(JSONObject response) {
                             Log.v("Confirmed Trip", response.toString());
                             Toast.makeText(getContext(),"Trip successfully requested.",Toast.LENGTH_SHORT).show();
-                            Trip createdTrip = gson.fromJson(response.toString(),Trip.class);
+                            createdTrip = gson.fromJson(response.toString(),Trip.class);
+                            ((MainActivity)getActivity()).showOnTripFragment(createdTrip.getId());
                         }
                     }, new Response.ErrorListener() {
 
@@ -225,14 +227,6 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
             mMap.setMyLocationEnabled(true);
         }
         actionBar.setTitle("Your Trip");
-//        Alerter.create(getActivity())
-//                .setTitle("Trip Details")
-//                .setText("Please revise your trip details showing the pickup location followed by your chosen destination(s). For any changes press the back button.")
-//                .enableSwipeToDismiss()
-//                .enableIconPulse(true)
-//                .setBackgroundColorRes(R.color.colorAccent)
-//                .setDuration(5000)
-//                .show();
 
         CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.confirm_fragment);
         Snackbar snackbar = Snackbar.make(coordinatorLayout, "Please revise your trip details before requesting", Snackbar.LENGTH_LONG);

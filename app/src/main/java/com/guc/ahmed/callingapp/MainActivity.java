@@ -1,7 +1,9 @@
 package com.guc.ahmed.callingapp;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
@@ -13,6 +15,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -26,10 +29,6 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -42,10 +41,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
 import com.guc.ahmed.callingapp.classes.Trip;
 import com.guc.ahmed.callingapp.fragments.ConfirmFragment;
 import com.guc.ahmed.callingapp.fragments.DestinationFragment;
+import com.guc.ahmed.callingapp.fragments.OnTripFragment;
 import com.guc.ahmed.callingapp.fragments.PickupFragment;
 import com.guc.ahmed.callingapp.fragments.TripHistoryFragment;
 import com.guc.ahmed.callingapp.fragments.ValidateFragment;
@@ -176,6 +175,9 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
         accountVerified = true;
         mAuth.addAuthStateListener(mAuthStateListener);
+        LocalBroadcastManager.getInstance(this).registerReceiver((mMessageReceiver),
+                new IntentFilter("FcmData")
+        );
     }
 
     @Override
@@ -373,4 +375,30 @@ public class MainActivity extends AppCompatActivity
         editor.commit();
         super.onDestroy();
     }
+
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle map = intent.getExtras();
+            String status = map.getString("STATUS");
+            if(status != null && status.length()>0 ){
+                showOnTripFragment(map.getString("TRIP_ID"));
+            }
+        }
+    };
+
+    public void showOnTripFragment(String tripID) {
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        if(currentFragment instanceof OnTripFragment){
+            ((OnTripFragment)currentFragment).updateData(tripID);
+        }else {
+            OnTripFragment onTripFragment = new OnTripFragment();
+            Bundle bundle = new Bundle();
+            bundle.putString("TRIP_ID", tripID);
+            onTripFragment.setArguments(bundle);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, onTripFragment, "PICKUP_FRAGMENT").commitAllowingStateLoss();
+        }
+    }
+
 }
