@@ -2,7 +2,6 @@ package com.guc.ahmed.callingapp.fragments;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
@@ -34,7 +33,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dd.processbutton.iml.ActionProcessButton;
-import com.gitonway.lee.niftymodaldialogeffects.lib.NiftyDialogBuilder;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -50,13 +48,12 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
-import com.google.android.gms.maps.model.Polyline;
 import com.guc.ahmed.callingapp.MainActivity;
 import com.guc.ahmed.callingapp.R;
 import com.guc.ahmed.callingapp.adapter.EditItemTouchHelperCallback;
 import com.guc.ahmed.callingapp.adapter.ItemTouchHelperAdapter;
 import com.guc.ahmed.callingapp.adapter.OnStartDragListener;
-import com.guc.ahmed.callingapp.classes.Trip;
+import com.guc.ahmed.callingapp.objects.RequestTrip;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
 import com.guc.ahmed.callingapp.gucpoints.GucPoints;
 import com.guc.ahmed.callingapp.map.CustomMarker;
@@ -65,7 +62,6 @@ import com.tapadoo.alerter.Alerter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class DestinationFragment extends Fragment
         implements OnMapReadyCallback, OnStartDragListener {
@@ -82,7 +78,7 @@ public class DestinationFragment extends Fragment
 
     private TextView destinationTxt;
     private ActionProcessButton button;
-    private Trip requestTrip;
+    private RequestTrip requestTrip;
 
     private AppCompatActivity activity;
     private ActionBar actionBar;
@@ -226,7 +222,7 @@ public class DestinationFragment extends Fragment
         Log.v("DESTINATION", "onStop");
     }
 
-    public void setRequestTrip(Trip trip){
+    public void setRequestTrip(RequestTrip trip){
         this.requestTrip = trip;
         if(mMap != null)
             onMapReady(mMap);

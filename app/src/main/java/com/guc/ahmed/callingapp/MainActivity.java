@@ -5,23 +5,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,6 +24,10 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -41,7 +40,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.guc.ahmed.callingapp.classes.Trip;
+import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
+import com.guc.ahmed.callingapp.objects.RequestTrip;
 import com.guc.ahmed.callingapp.fragments.ConfirmFragment;
 import com.guc.ahmed.callingapp.fragments.DestinationFragment;
 import com.guc.ahmed.callingapp.fragments.OnTripFragment;
@@ -57,7 +57,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
@@ -71,7 +70,7 @@ public class MainActivity extends AppCompatActivity
     public static FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
 
-    private Trip requestTrip;
+    private RequestTrip requestTrip;
     private static boolean accountVerified;
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
@@ -106,8 +105,9 @@ public class MainActivity extends AppCompatActivity
 
         Log.v("Account Verified = " ,accountVerified + "");
 
-        requestTrip = new Trip();
+        requestTrip = new RequestTrip();
         gucPlaces = new ArrayList<>();
+        getGucPlaces();
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -168,6 +168,43 @@ public class MainActivity extends AppCompatActivity
         GsonBuilder gsonBuilder = new GsonBuilder();
         gson = gsonBuilder.create();
 
+    }
+
+    private void getGucPlaces() {
+        final ArrayList<GucPlace> arrayList = new ArrayList<>();
+        String url = getResources().getString(R.string.url_get_pins);
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest
+                (Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
+
+                    @Override
+                    public void onResponse(JSONArray response) {
+
+                        for(int i=0;i<response.length();i++){
+                            try {
+                                JSONObject object = response.getJSONObject(i);
+                                GucPlace place = gson.fromJson(object.toString(), GucPlace.class);
+                                arrayList.add(place);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        MainActivity.gucPlaces = arrayList;
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                }){
+            @Override
+            public Priority getPriority() {
+                return Priority.IMMEDIATE;
+            }
+        };
+
+        // Access the RequestQueue through your singleton class.
+        MyVolleySingleton.getInstance(this).addToRequestQueue(jsonArrayRequest);
     }
 
     @Override
@@ -379,25 +416,23 @@ public class MainActivity extends AppCompatActivity
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Bundle map = intent.getExtras();
-            String status = map.getString("STATUS");
+            Bundle bundle = intent.getExtras();
+            String status = bundle.getString("EVENT");
             if(status != null && status.length()>0 ){
-                showOnTripFragment(map.getString("TRIP_ID"));
+                showOnTripFragment(bundle);
             }
         }
     };
 
-    public void showOnTripFragment(String tripID) {
+    public void showOnTripFragment(Bundle bundle) {
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         if(currentFragment instanceof OnTripFragment){
-            ((OnTripFragment)currentFragment).updateData(tripID);
+            ((OnTripFragment)currentFragment).updateData(bundle);
         }else {
             OnTripFragment onTripFragment = new OnTripFragment();
-            Bundle bundle = new Bundle();
-            bundle.putString("TRIP_ID", tripID);
             onTripFragment.setArguments(bundle);
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, onTripFragment, "PICKUP_FRAGMENT").commitAllowingStateLoss();
+                    .replace(R.id.fragment_container, onTripFragment, "ONTRIP_FRAGMENT").commitAllowingStateLoss();
         }
     }
 

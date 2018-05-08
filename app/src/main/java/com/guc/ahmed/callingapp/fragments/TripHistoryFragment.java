@@ -7,7 +7,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,20 +23,14 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.guc.ahmed.callingapp.MainActivity;
 import com.guc.ahmed.callingapp.R;
-import com.guc.ahmed.callingapp.adapter.EditItemTouchHelperCallback;
 import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
-import com.guc.ahmed.callingapp.classes.Profile;
-import com.guc.ahmed.callingapp.classes.Trip;
+import com.guc.ahmed.callingapp.objects.Profile;
+import com.guc.ahmed.callingapp.objects.RequestTrip;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
-import com.guc.ahmed.callingapp.gucpoints.GucPoints;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -49,7 +42,7 @@ public class TripHistoryFragment extends Fragment {
     private View view;
     private RecyclerView mRecyclerView;
     private MyAdapter mAdapter;
-    private List<Trip> tripHistory;
+    private List<RequestTrip> tripHistory;
 
     private String gmail;
     private Profile profile;
@@ -66,7 +59,7 @@ public class TripHistoryFragment extends Fragment {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_trip_history, container, false);
 
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Trip History");
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("RequestTrip History");
 
         gmail = getArguments().getString("gmail");
         profile = getProfile(gmail);
@@ -112,7 +105,7 @@ public class TripHistoryFragment extends Fragment {
         return null;
     }
 
-    private List<Trip> getTripHistory() {
+    private List<RequestTrip> getTripHistory() {
         return profile.getTripHistory();
     }
 
@@ -133,7 +126,7 @@ public class TripHistoryFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
-            Trip trip = tripHistory.get(position);
+            RequestTrip trip = tripHistory.get(position);
             holder.pickupTxt.setText(getGucPlaceByLatLng(trip.getPickupLocation()).getName());
             if(trip.getCancelTime() != null){
                 holder.tripStatus.setText("Canceled");

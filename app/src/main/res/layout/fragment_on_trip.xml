@@ -280,6 +280,17 @@
                     android:visibility="gone"/>
 
                 <com.dd.processbutton.iml.ActionProcessButton
+                    android:id="@+id/on_trip_continue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Continue to Next Destination"
+                    android:textSize="16sp"
+                    android:textColor="@color/colorPrimary"
+                    custom:pb_colorNormal="@android:color/holo_green_dark"
+                    custom:pb_colorPressed="@android:color/holo_green_light"
+                    android:visibility="gone"/>
+
+                <com.dd.processbutton.iml.ActionProcessButton
                     android:id="@+id/on_trip_end"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -301,6 +312,18 @@
                     custom:pb_colorPressed="@android:color/holo_red_light"
                     android:visibility="gone"/>
 
+
+                <com.dd.processbutton.iml.ActionProcessButton
+                    android:id="@+id/on_trip_done"
+                    android:layout_gravity="right"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="DONE"
+                    android:textSize="16sp"
+                    android:textColor="@color/colorPrimary"
+                    custom:pb_colorNormal="@android:color/holo_green_light"
+                    custom:pb_colorPressed="@android:color/holo_green_light"
+                    android:visibility="gone"/>
 
             </LinearLayout>
 

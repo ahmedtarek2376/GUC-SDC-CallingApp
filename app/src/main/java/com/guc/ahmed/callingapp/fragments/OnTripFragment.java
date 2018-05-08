@@ -1,5 +1,7 @@
 package com.guc.ahmed.callingapp.fragments;
 
+import android.app.Activity;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -12,19 +14,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.dd.processbutton.iml.ActionProcessButton;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -33,31 +34,32 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.guc.ahmed.callingapp.MainActivity;
 import com.guc.ahmed.callingapp.R;
 import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
-import com.guc.ahmed.callingapp.classes.Car;
-import com.guc.ahmed.callingapp.classes.Profile;
-import com.guc.ahmed.callingapp.classes.Trip;
+import com.guc.ahmed.callingapp.objects.Car;
 import com.guc.ahmed.callingapp.gucpoints.GucPoints;
 import com.guc.ahmed.callingapp.map.CustomMarker;
+import com.guc.ahmed.callingapp.objects.Trip;
+import com.guc.ahmed.callingapp.objects.TripEvent;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class OnTripFragment extends Fragment implements OnMapReadyCallback {
+public class OnTripFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener {
 
 
     private View view;
     private Gson gson;
     private Car retrievedCar;
     private TextView statusTxt;
-    private Button buttonStart;
-    private Button buttonCancel;
-    private Button buttonEnd;
+    private ActionProcessButton buttonStart;
+    private ActionProcessButton buttonCancel;
+    private ActionProcessButton buttonEnd;
+    private ActionProcessButton buttonContinue;
+    private ActionProcessButton buttonDone;
     private AppCompatActivity activity;
     private ActionBar actionBar;
 
@@ -77,6 +79,9 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback {
     private Runnable updateCarLocation;
     private Marker carMarker;
     private CustomMarker customMarker;
+    private String mTripID;
+    private String mGmail;
+    private String mEvent;
 
     public OnTripFragment() {
         // Required empty public constructor
@@ -95,9 +100,27 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback {
         actionBar = activity.getSupportActionBar();
 
         statusTxt = view.findViewById(R.id.on_trip_status);
+
         buttonStart = view.findViewById(R.id.on_trip_start);
+        buttonStart.setMode(ActionProcessButton.Mode.ENDLESS);
+        buttonStart.setTypeface(Typeface.createFromAsset(getContext().getAssets(), "fonts/Roboto-Regular.ttf"));
+        buttonStart.setOnClickListener(this);
         buttonEnd = view.findViewById(R.id.on_trip_end);
+        buttonEnd.setMode(ActionProcessButton.Mode.ENDLESS);
+        buttonEnd.setTypeface(Typeface.createFromAsset(getContext().getAssets(), "fonts/Roboto-Regular.ttf"));
+        buttonEnd.setOnClickListener(this);
         buttonCancel = view.findViewById(R.id.on_trip_cancel);
+        buttonCancel.setMode(ActionProcessButton.Mode.ENDLESS);
+        buttonCancel.setTypeface(Typeface.createFromAsset(getContext().getAssets(), "fonts/Roboto-Regular.ttf"));
+        buttonCancel.setOnClickListener(this);
+        buttonContinue = view.findViewById(R.id.on_trip_continue);
+        buttonContinue.setMode(ActionProcessButton.Mode.ENDLESS);
+        buttonContinue.setTypeface(Typeface.createFromAsset(getContext().getAssets(), "fonts/Roboto-Regular.ttf"));
+        buttonContinue.setOnClickListener(this);
+        buttonDone = view.findViewById(R.id.on_trip_done);
+        buttonDone.setTypeface(Typeface.createFromAsset(getContext().getAssets(), "fonts/Roboto-Regular.ttf"));
+        buttonDone.setOnClickListener(this);
+
 
         destination2 = view.findViewById(R.id.summary_destination_2);
         destination3 = view.findViewById(R.id.summary_destination_3);
@@ -108,6 +131,12 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback {
         destination2Txt = view.findViewById(R.id.destination_2_txt);
         destination3Txt = view.findViewById(R.id.destination_3_txt);
         tripPath = view.findViewById(R.id.trip_path);
+
+        if(getArguments()!=null){
+            mTripID = getArguments().getString("TRIP_ID");
+            mEvent = getArguments().getString("EVENT");
+        }
+        mGmail = MainActivity.mAuth.getCurrentUser().getEmail();
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager()
@@ -121,18 +150,27 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback {
     public void onResume() {
         super.onResume();
         actionBar.setTitle("Your Trip");
+        if(mMap!=null){
+            updateData(null);
+        }
+
+    }
+    public void resumeCarsUpdates() {
+        if(carhandler!=null && updateCarLocation!=null && mMap!=null){
+            carhandler.post(updateCarLocation);
+        }
     }
 
     private void drawTripPathGraph() {
         pickupTxt.setText(GucPoints.getGucPlaceByLatLng(currentTrip.getPickupLocation()).getName());
-        destination1Txt.setText(GucPoints.getGucPlaceByLatLng(currentTrip.getDestinations().get(0)).getName());
+        destination1Txt.setText(GucPoints.getGucPlaceByLatLng(currentTrip.getDestinations().get(0).getLocation()).getName());
         if(currentTrip.getDestinations().size() == 2){
-            destination2Txt.setText(GucPoints.getGucPlaceByLatLng(currentTrip.getDestinations().get(1)).getName());
+            destination2Txt.setText(GucPoints.getGucPlaceByLatLng(currentTrip.getDestinations().get(1).getLocation()).getName());
             destination2.setVisibility(View.VISIBLE);
             dot1to2.setVisibility(View.VISIBLE);
         }else if(currentTrip.getDestinations().size() == 3){
-            destination2Txt.setText(GucPoints.getGucPlaceByLatLng(currentTrip.getDestinations().get(1)).getName());
-            destination3Txt.setText(GucPoints.getGucPlaceByLatLng(currentTrip.getDestinations().get(2)).getName());
+            destination2Txt.setText(GucPoints.getGucPlaceByLatLng(currentTrip.getDestinations().get(1).getLocation()).getName());
+            destination3Txt.setText(GucPoints.getGucPlaceByLatLng(currentTrip.getDestinations().get(2).getLocation()).getName());
             destination2.setVisibility(View.VISIBLE);
             dot1to2.setVisibility(View.VISIBLE);
             destination3.setVisibility(View.VISIBLE);
@@ -141,8 +179,12 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback {
         tripPath.setVisibility(View.VISIBLE);
     }
 
-    public void updateData(String tripID) {
-        String url = getResources().getString(R.string.url_get_trip_details) + tripID;
+    public void updateData(Bundle bundle) {
+        if(bundle != null){
+            mTripID = bundle.getString("TRIP_ID");
+            mEvent = bundle.getString("EVENT");
+        }
+        String url = getResources().getString(R.string.url_get_trip_details) + mTripID;
         Log.v("CarDetails", url);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
@@ -170,27 +212,91 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback {
         drawTripPathGraph();
 
         String status = "Unknown";
-        if(currentTrip.getEndTime()!=null){
+        String event = currentTrip.getEvent();
+//        if(currentTrip.getEndTime()!=null){
+//            status = "Trip Ended";
+//            buttonCancel.setVisibility(View.GONE);
+//            buttonEnd.setVisibility(View.GONE);
+//            buttonStart.setVisibility(View.GONE);
+//            buttonContinue.setVisibility(View.GONE);
+//        }else if(currentTrip.getCancelTime()!=null){
+//            status = "Trip Canceled";
+//            buttonCancel.setVisibility(View.GONE);
+//            buttonEnd.setVisibility(View.GONE);
+//            buttonStart.setVisibility(View.GONE);
+//            buttonContinue.setVisibility(View.GONE);
+//        }else if(mEvent.equalsIgnoreCase("ARRIVE_DESTINATION")){
+//            status = "Arrived Destination";
+//            buttonCancel.setVisibility(View.GONE);
+//            buttonEnd.setVisibility(View.VISIBLE);
+//            buttonStart.setVisibility(View.GONE);
+//            buttonContinue.setVisibility(View.VISIBLE);
+//        }else if(mEvent.equalsIgnoreCase("ARRIVE_FINAL")){
+//            status = "Arrived Last Destination";
+//            buttonCancel.setVisibility(View.GONE);
+//            buttonEnd.setVisibility(View.VISIBLE);
+//            buttonStart.setVisibility(View.GONE);
+//            buttonContinue.setVisibility(View.GONE);
+//        }else if(currentTrip.getStartTime()!=null){
+//            status = "Moving in Car";
+//            buttonCancel.setVisibility(View.GONE);
+//            buttonEnd.setVisibility(View.VISIBLE);
+//            buttonStart.setVisibility(View.GONE);
+//            buttonContinue.setVisibility(View.GONE);
+//        }else if(currentTrip.getCarArriveTime()!=null){
+//            status = "Car Arrived";
+//            buttonCancel.setVisibility(View.VISIBLE);
+//            buttonEnd.setVisibility(View.GONE);
+//            buttonStart.setVisibility(View.VISIBLE);
+//            buttonContinue.setVisibility(View.GONE);
+//        }
+//        else {
+//            buttonCancel.setVisibility(View.VISIBLE);
+//            buttonEnd.setVisibility(View.GONE);
+//            buttonStart.setVisibility(View.GONE);
+//            status = "Car on the way";
+//        }
+
+        if(event.equalsIgnoreCase(TripEvent.END.name())){
             status = "Trip Ended";
             buttonCancel.setVisibility(View.GONE);
             buttonEnd.setVisibility(View.GONE);
             buttonStart.setVisibility(View.GONE);
-        }else if(currentTrip.getCancelTime()!=null){
+            buttonContinue.setVisibility(View.GONE);
+            buttonDone.setVisibility(View.VISIBLE);
+        }else if(event.equalsIgnoreCase(TripEvent.CANCEL.name())){
             status = "Trip Canceled";
             buttonCancel.setVisibility(View.GONE);
             buttonEnd.setVisibility(View.GONE);
             buttonStart.setVisibility(View.GONE);
-        }else if(currentTrip.getStartTime()!=null){
-            status = "Trip Started";
+            buttonContinue.setVisibility(View.GONE);
+            buttonDone.setVisibility(View.VISIBLE);
+        }else if(event.equalsIgnoreCase(TripEvent.ARRIVE_DESTINATION.name())){
+            status = "Arrived Destination";
             buttonCancel.setVisibility(View.GONE);
             buttonEnd.setVisibility(View.VISIBLE);
             buttonStart.setVisibility(View.GONE);
-        }else if(currentTrip.getCarArriveTime()!=null){
+            buttonContinue.setVisibility(View.VISIBLE);
+        }else if(event.equalsIgnoreCase(TripEvent.ARRIVE_FINAL.name())){
+            status = "Arrived Last Destination";
+            buttonCancel.setVisibility(View.GONE);
+            buttonEnd.setVisibility(View.VISIBLE);
+            buttonStart.setVisibility(View.GONE);
+            buttonContinue.setVisibility(View.GONE);
+        }else if(event.equalsIgnoreCase(TripEvent.START.name()) || event.equalsIgnoreCase(TripEvent.CONTINUE.name())){
+            status = "On Trip";
+            buttonCancel.setVisibility(View.GONE);
+            buttonEnd.setVisibility(View.VISIBLE);
+            buttonStart.setVisibility(View.GONE);
+            buttonContinue.setVisibility(View.GONE);
+        }else if(event.equalsIgnoreCase(TripEvent.ARRIVE_PICKUP.name())){
+            status = "Car Arrived";
             buttonCancel.setVisibility(View.VISIBLE);
             buttonEnd.setVisibility(View.GONE);
             buttonStart.setVisibility(View.VISIBLE);
-            status = "Car Arrived";
-        }else {
+            buttonContinue.setVisibility(View.GONE);
+        }
+        else if(event.equalsIgnoreCase(TripEvent.CAR_ON_WAY.name())){
             buttonCancel.setVisibility(View.VISIBLE);
             buttonEnd.setVisibility(View.GONE);
             buttonStart.setVisibility(View.GONE);
@@ -212,7 +318,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback {
 
         boolean success = googleMap.setMapStyle(new MapStyleOptions(getResources()
                 .getString(R.string.style_json)));
-        // Constrain the camera target to the Adelaide bounds.
+        // Constrain the camera target to the GUC bounds.
         mMap.setLatLngBoundsForCameraTarget(GucPoints.GUC);
 
         //to be removed
@@ -220,9 +326,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback {
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(17));
 
-        updateData(getArguments().getString("TRIP_ID"));
-
-
+        updateData(null);
     }
 
     private void drawCar() {
@@ -248,7 +352,9 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback {
 
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.v("CarDetails", "It didnt work");
+                                Activity activity = getActivity();
+                                if(activity != null && isAdded())
+                                    Log.v("CarDetails", "It didnt work");
                             }
                         });
 
@@ -260,6 +366,8 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback {
 
         carhandler.postDelayed(updateCarLocation, 0);
     }
+
+
 
     private void animateCar() {
         if(carMarker == null){
@@ -309,5 +417,113 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback {
                 }
             }
         });
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        stopCarsUpdates();
+    }
+
+    public void stopCarsUpdates() {
+        if(carhandler!=null){
+            carhandler.removeCallbacks(updateCarLocation);
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        String url = "";
+
+        final ActionProcessButton button = (ActionProcessButton)v;
+        button.setProgress(1);
+
+        switch (v.getId()) {
+
+            case R.id.on_trip_start:
+                url = getResources().getString(R.string.url_trip_start) + mGmail;
+                mEvent = "START";
+                break;
+
+            case R.id.on_trip_continue:
+                url = getResources().getString(R.string.url_trip_continue) + mGmail;
+                mEvent = "CONTINUE";
+                break;
+
+            case R.id.on_trip_end:
+                url = getResources().getString(R.string.url_trip_end) + mGmail;
+                mEvent = "END";
+                break;
+
+            case R.id.on_trip_cancel:
+                url = getResources().getString(R.string.url_trip_cancel) + mGmail;
+                mEvent = "CANCEL";
+                break;
+                
+            case R.id.on_trip_done:
+                PickupFragment pickupFragment = new PickupFragment();
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, pickupFragment, "PICKUP_FRAGMENT").commit();
+                return;
+            default:
+                break;
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
+                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.v("CarDetails", "It worked");
+                        currentTrip = gson.fromJson(response.toString(), Trip.class);
+                        updateUI();
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        if(getContext()==null){
+                            return;
+                        }
+                        Toast.makeText(getContext(),"Error, please try again.", Toast.LENGTH_LONG);
+                    }
+                });
+
+        // Access the RequestQueue through your singleton class.
+        MyVolleySingleton.getInstance(getContext()).addToRequestQueue(jsonObjectRequest);
+    }
+
+    private void updateOfflineUI() {
+        Log.v("ONTRIP", "I reacher update offline");
+        String status = "Unknown";
+        if(mEvent.equalsIgnoreCase("START")){
+            status = "Moving in Car";
+            buttonCancel.setVisibility(View.VISIBLE);
+            buttonEnd.setVisibility(View.GONE);
+            buttonStart.setVisibility(View.GONE);
+            buttonContinue.setVisibility(View.GONE);
+        }else if(mEvent.equalsIgnoreCase("CONTINUE")){
+            status = "Moving in Car";
+            buttonCancel.setVisibility(View.VISIBLE);
+            buttonEnd.setVisibility(View.GONE);
+            buttonStart.setVisibility(View.GONE);
+            buttonContinue.setVisibility(View.GONE);
+
+        }else if(mEvent.equalsIgnoreCase("CANCEL")){
+            status = "Trip Canceled";
+            buttonCancel.setVisibility(View.GONE);
+            buttonEnd.setVisibility(View.GONE);
+            buttonStart.setVisibility(View.GONE);
+            buttonContinue.setVisibility(View.GONE);
+
+        }else if(mEvent.equalsIgnoreCase("END")){
+            status = "Trip Ended";
+            buttonCancel.setVisibility(View.GONE);
+            buttonEnd.setVisibility(View.GONE);
+            buttonStart.setVisibility(View.GONE);
+            buttonContinue.setVisibility(View.GONE);
+
+        }
+        statusTxt.setText(status);
     }
 }

@@ -59,7 +59,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (remoteMessage.getData().size() > 0) {
             Map<String,String> data = remoteMessage.getData();
             Intent intent = new Intent("FcmData");
-            intent.putExtra("STATUS", remoteMessage.getData().get("STATUS"));
+            intent.putExtra("EVENT", remoteMessage.getData().get("EVENT"));
             intent.putExtra("TRIP_ID", remoteMessage.getData().get("TRIP_ID"));
             intent.putExtra("CAR_ID", remoteMessage.getData().get("CAR_ID"));
             broadcaster.sendBroadcast(intent);

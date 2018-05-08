@@ -34,9 +34,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.dd.processbutton.iml.ActionProcessButton;
-import com.gitonway.lee.niftymodaldialogeffects.lib.NiftyDialogBuilder;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -52,14 +50,12 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.guc.ahmed.callingapp.MainActivity;
 import com.guc.ahmed.callingapp.R;
 import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
-import com.guc.ahmed.callingapp.classes.Profile;
-import com.guc.ahmed.callingapp.classes.Trip;
+import com.guc.ahmed.callingapp.objects.RequestTrip;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
 import com.guc.ahmed.callingapp.gucpoints.GucPoints;
 import com.guc.ahmed.callingapp.map.CustomMarker;
@@ -72,7 +68,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class PickupFragment extends Fragment
         implements OnMapReadyCallback {
@@ -93,14 +88,14 @@ public class PickupFragment extends Fragment
 
     private AppCompatActivity activity;
     private ActionBar actionBar;
-    private Trip requestTrip;
+    private RequestTrip requestTrip;
     private Alert alert;
     private Handler carhandler;
     private Runnable updateCars;
     private Gson gson;
     private ArrayList<GucPlace> gucPlaces;
 
-    public void setRequestTrip(Trip requestTrip) {
+    public void setRequestTrip(RequestTrip requestTrip) {
         this.requestTrip = requestTrip;
     }
 
@@ -289,6 +284,9 @@ public class PickupFragment extends Fragment
 
                             @Override
                             public void onResponse(JSONArray response) {
+                                if(getContext()==null){
+                                    return;
+                                }
                                 Log.v("AvailableCars", response.toString());
 
                                 for(int i=0;i<response.length();i++){
@@ -334,7 +332,7 @@ public class PickupFragment extends Fragment
                 marker.setPosition(latLng);
             }
         } else {
-            CustomMarker customMarker = new CustomMarker(getContext());
+            CustomMarker customMarker = new CustomMarker(getActivity());
             customMarker.setImage(R.drawable.ic_directions_car_black_24dp);
             markers.put( carID,
                     mMap.addMarker(new MarkerOptions().position(latLng)
@@ -397,7 +395,7 @@ public class PickupFragment extends Fragment
         public void onClick(View v) {
             if(pickupLocation == null){
                 CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.pickup_fragment);
-                Snackbar snackbar = Snackbar.make(coordinatorLayout, "Please select a pickup location", Snackbar.LENGTH_SHORT);
+                Snackbar snackbar = Snackbar.make(coordinatorLayout, "Please select a pickup location", Snackbar.LENGTH_LONG);
                 View view = snackbar.getView();
                 view.setBackgroundColor(getResources().getColor(R.color.red_error));
                 TextView textView = view.findViewById(android.support.design.R.id.snackbar_text);
@@ -406,47 +404,11 @@ public class PickupFragment extends Fragment
                 params.gravity = Gravity.TOP;
                 view.setLayoutParams(params);
                 snackbar.show();
-            }else{
-                if(!isGpsAvailable(getActivity().getApplicationContext())){
-                    Alerter.clearCurrent(getActivity());
-                    alert = Alerter.create(getActivity())
-                            .setTitle("Location is turned off !")
-                            .setText("Click here to enable your Location from Settings. Location is used to check whether you are inside the GUC campus.")
-                            .enableIconPulse(true)
-                            .setBackgroundColorRes(R.color.red_error)
-                            .setDuration(5000)
-                            .setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                                }
-                            })
-                            .show();
-                } else if(lastLocation == null) {
-                    Alerter.clearCurrent(getActivity());
-                    alert = Alerter.create(getActivity())
-                            .setTitle("Can not get Location updates !")
-                            .setText("Please check your location settings.")
-                            .enableIconPulse(true)
-                            .setBackgroundColorRes(R.color.red_error)
-                            .setDuration(5000)
-                            .show();
-                }else if(GucPoints.GUC.contains(lastLocation)) {
-                    ////////////////////This has to be changed to NOT////////////////////////////////
-                        Alerter.clearCurrent(getActivity());
-                        alert = Alerter.create(getActivity())
-                                .setTitle("You are not inside GUC campus !")
-                                .setText("You can order a car only inside the GUC campus.")
-                                .enableIconPulse(true)
-                                .setBackgroundColorRes(R.color.red_error)
-                                .setDuration(5000)
-                                .show();
-                } else {
+            }else {
                     Alerter.clearCurrent(getActivity());
                     onPickupLocationListener.onPickupConfirmed(pickupLocation);
                 }
             }
-        }
     };
 
     private boolean isGpsAvailable(Context context) {

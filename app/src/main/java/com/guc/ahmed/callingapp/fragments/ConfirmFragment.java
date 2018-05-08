@@ -4,15 +4,20 @@ package com.guc.ahmed.callingapp.fragments;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.location.Location;
-import android.net.Uri;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
@@ -40,7 +45,6 @@ import com.akexorcist.googledirection.util.DirectionConverter;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.dd.processbutton.iml.ActionProcessButton;
 import com.gitonway.lee.niftymodaldialogeffects.lib.NiftyDialogBuilder;
@@ -64,25 +68,24 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 import com.guc.ahmed.callingapp.MainActivity;
 import com.guc.ahmed.callingapp.R;
 import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
-import com.guc.ahmed.callingapp.classes.Trip;
-import com.guc.ahmed.callingapp.fcm.MyFirebaseInstanceIDService;
+import com.guc.ahmed.callingapp.objects.Profile;
+import com.guc.ahmed.callingapp.objects.RequestTrip;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
 import com.guc.ahmed.callingapp.gucpoints.GucPoints;
 import com.guc.ahmed.callingapp.map.CustomMarker;
+import com.guc.ahmed.callingapp.objects.Trip;
+import com.tapadoo.alerter.Alert;
 import com.tapadoo.alerter.Alerter;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
 
@@ -99,7 +102,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
     private ActionProcessButton button;
     private AppCompatActivity activity;
     private ActionBar actionBar;
-    private Trip requestTrip;
+    private RequestTrip requestTrip;
 
     private LinearLayout destination2;
     private LinearLayout destination3;
@@ -110,6 +113,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
     private TextView destination2Txt;
     private TextView destination3Txt;
     private Gson gson;
+    private Alert alert;
 
     public ConfirmFragment() {
         // Required empty public constructor
@@ -180,43 +184,254 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
     private View.OnClickListener requestTripButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            button.setProgress(1);
 
-            requestTrip.setUserID(MainActivity.mAuth.getCurrentUser().getEmail());
-            requestTrip.setUserFcmToken(FirebaseInstanceId.getInstance().getToken());
-
-            String str = gson.toJson(requestTrip);
-            JSONObject trip = new JSONObject();
-            try {
-                trip = new JSONObject(str);
-            } catch (JSONException e) {
-                e.printStackTrace();
+            boolean allowed = checkAllPermissions();
+            if(allowed){
+                accountVerifiedAndFree();
+            }else {
+                return;
             }
-
-            String url = getResources().getString(R.string.url_request_trip);
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
-                    (Request.Method.POST, url, trip, new Response.Listener<JSONObject>() {
-
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            Log.v("Confirmed Trip", response.toString());
-                            Toast.makeText(getContext(),"Trip successfully requested.",Toast.LENGTH_SHORT).show();
-                            createdTrip = gson.fromJson(response.toString(),Trip.class);
-                            ((MainActivity)getActivity()).showOnTripFragment(createdTrip.getId());
-                        }
-                    }, new Response.ErrorListener() {
-
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-
-                        }
-                    });
-
-            // Access the RequestQueue through your singleton class.
-            MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
-
         }
     };
+
+    private boolean checkAllPermissions() {
+        button.setProgress(1);
+        if(!isNetworkStatusAvialable(getContext())) {
+            Alerter.clearCurrent(getActivity());
+            alert = Alerter.create(getActivity())
+                    .setTitle("No Internet Connection !!")
+                    .setText("Please enable internet connection to proceed. Click to dismiss when internet connection is available.")
+                    .enableIconPulse(true)
+                    .disableOutsideTouch()
+                    .setBackgroundColorRes(R.color.red_error)
+                    .enableInfiniteDuration(true)
+                    .setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if(isNetworkStatusAvialable(getContext())){
+                                alert.hide();
+                            }
+                        }
+                    })
+                    .show();
+            button.setProgress(0);
+            return false;
+        } else if(!isGpsAvailable(getActivity().getApplicationContext())){
+            Alerter.clearCurrent(getActivity());
+            alert = Alerter.create(getActivity())
+                    .setTitle("Location is turned off !")
+                    .setText("Click here to enable your Location from Settings. Location is used to check whether you are inside the GUC campus.")
+                    .enableIconPulse(true)
+                    .setBackgroundColorRes(R.color.red_error)
+                    .setDuration(5000)
+                    .setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                        }
+                    })
+                    .show();
+            button.setProgress(0);
+
+            return false;
+        } else if(lastLocation == null) {
+            Alerter.clearCurrent(getActivity());
+            alert = Alerter.create(getActivity())
+                    .setTitle("Can not get Location updates !")
+                    .setText("Please check your location settings.")
+                    .enableIconPulse(true)
+                    .setBackgroundColorRes(R.color.red_error)
+                    .setDuration(5000)
+                    .show();
+            button.setProgress(0);
+
+            return false;
+        }else if(GucPoints.GUC.contains(lastLocation)) {
+            ////////////////////This has to be changed to NOT////////////////////////////////
+            Alerter.clearCurrent(getActivity());
+            alert = Alerter.create(getActivity())
+                    .setTitle("You are not inside GUC campus !")
+                    .setText("You can order a car only inside the GUC campus.")
+                    .enableIconPulse(true)
+                    .setBackgroundColorRes(R.color.red_error)
+                    .setDuration(5000)
+                    .show();
+            button.setProgress(0);
+
+            return false;
+        } else {
+            Alerter.clearCurrent(getActivity());
+        }
+        return true;
+    }
+
+    private void accountVerifiedAndFree() {
+        button.setProgress(1);
+
+        String verifyUrl = getResources().getString(R.string.url_get_profile)+ MainActivity.mAuth.getCurrentUser().getEmail();
+        JsonObjectRequest verifiedRequest = new JsonObjectRequest
+                (Request.Method.GET, verifyUrl, null, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                        Profile profile = gson.fromJson(response.toString(), Profile.class);
+
+                        if(profile.isVerified()){
+                            if(getContext()==null){
+                                return;
+                            }
+                            Toast.makeText(getContext(),"Account verified.", Toast.LENGTH_SHORT).show();
+                            checkOngoingTrip();
+                        }else {
+                            notifyAccountNotVerified();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        if(getContext()==null){
+                            return;
+                        }
+                        Toast.makeText(getContext(),"Error, please try again.", Toast.LENGTH_LONG);
+                    }
+                });
+
+        // Access the RequestQueue through your singleton class.
+        MyVolleySingleton.getInstance(getContext()).addToRequestQueue(verifiedRequest);
+    }
+
+    private void checkOngoingTrip() {
+        String freeUrl = getResources().getString(R.string.url_check_ongoing_trip)+ MainActivity.mAuth.getCurrentUser().getEmail();
+        JsonObjectRequest freeRequest = new JsonObjectRequest
+                (Request.Method.GET, freeUrl, null, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        boolean free = false;
+                        try {
+                            free = response.getBoolean("FREE");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        if(free){
+//                            Toast.makeText(getContext(),"No ongoing trips.", Toast.LENGTH_SHORT).show();
+                            submitTripRequest();
+                        }else {
+                            String tripID = "";
+                            try {
+                                tripID = response.getString("TRIP_ID");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            notifyAlreadyOnTrip(tripID);
+                        }
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        if(getContext()==null){
+                            return;
+                        }
+                        Toast.makeText(getContext(),"Error, please try again.", Toast.LENGTH_LONG);
+                    }
+                });
+        MyVolleySingleton.getInstance(getContext()).addToRequestQueue(freeRequest);
+
+    }
+
+    private void submitTripRequest() {
+
+        requestTrip.setUserID(MainActivity.mAuth.getCurrentUser().getEmail());
+        requestTrip.setUserFcmToken(FirebaseInstanceId.getInstance().getToken());
+
+        String str = gson.toJson(Trip.toTrip(requestTrip));
+        JSONObject trip = new JSONObject();
+        try {
+            trip = new JSONObject(str);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String url = getResources().getString(R.string.url_request_trip);
+        JsonObjectRequest tripRequest = new JsonObjectRequest
+                (Request.Method.POST, url, trip, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.v("Confirmed RequestTrip", response.toString());
+                        Toast.makeText(getContext(),"RequestTrip successfully requested.",Toast.LENGTH_SHORT).show();
+                        createdTrip = gson.fromJson(response.toString(),Trip.class);
+                        Bundle bundle = new Bundle();
+                        bundle.putString("EVENT","CREATE");
+                        bundle.putString("CAR_ID",createdTrip.getCarID());
+                        bundle.putString("TRIP_ID",createdTrip.getId());
+                        ((MainActivity)getActivity()).showOnTripFragment(bundle);
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        if(getContext()==null){
+                            return;
+                        }
+                        Toast.makeText(getContext(),"Error, please try again.", Toast.LENGTH_LONG);
+                    }
+                });
+
+        MyVolleySingleton.getInstance(getContext()).addToRequestQueue(tripRequest);
+
+    }
+
+    private void notifyAlreadyOnTrip(final String tripID) {
+        if(getContext()==null){
+            return;
+        }
+        Alerter.clearCurrent(getActivity());
+        alert = Alerter.create(getActivity())
+                .setTitle("You already have an ongoing trip !")
+                .setText("Click here to track your current trip. You can not order multiple trips at the same time.")
+                .enableIconPulse(true)
+                .setBackgroundColorRes(R.color.red_error)
+                .setDuration(10000)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Bundle bundle = new Bundle();
+                        bundle.putString("TRIP_ID", tripID);
+                        ((MainActivity)getActivity()).showOnTripFragment(bundle);
+                    }
+                })
+                .show();
+
+        button.setProgress(0);
+    }
+
+    private void notifyAccountNotVerified() {
+        if(getContext()==null){
+            return;
+        }
+        Toast.makeText(getContext(),"Account not verified.", Toast.LENGTH_LONG).show();
+        button.setProgress(0);
+    }
+
+    public static boolean isNetworkStatusAvialable (Context context) {
+        ConnectivityManager cm =
+                (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+
+        return isConnected;
+    }
+
+    private boolean isGpsAvailable(Context context) {
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
 
     @Override
     public void onResume() {
@@ -226,7 +441,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
             mMap.setMyLocationEnabled(true);
         }
-        actionBar.setTitle("Your Trip");
+        actionBar.setTitle("Your RequestTrip");
 
         CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.confirm_fragment);
         Snackbar snackbar = Snackbar.make(coordinatorLayout, "Please revise your trip details before requesting", Snackbar.LENGTH_LONG);
@@ -322,11 +537,14 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
                 .execute(new DirectionCallback() {
                     @Override
                     public void onDirectionSuccess(Direction direction, String rawBody) {
+                        if(getContext()==null){
+                            return;
+                        }
                         if(direction.isOK()) {
                             Route route = direction.getRouteList().get(0);
                             for (Leg leg : route.getLegList()) {
                                 ArrayList<LatLng> directionPositionList = leg.getDirectionPoint();
-                                PolylineOptions polylineOptions = DirectionConverter.createPolyline(getContext(), directionPositionList, 3, Color.GRAY);
+                                PolylineOptions polylineOptions = DirectionConverter.createPolyline(getActivity(), directionPositionList, 3, Color.GRAY);
                                 mMap.addPolyline(polylineOptions);
                             }
                         } else {
@@ -424,7 +642,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
         }
     }
 
-    public void setRequestTrip(Trip requestTrip) {
+    public void setRequestTrip(RequestTrip requestTrip) {
         this.requestTrip = requestTrip;
     }
 }
