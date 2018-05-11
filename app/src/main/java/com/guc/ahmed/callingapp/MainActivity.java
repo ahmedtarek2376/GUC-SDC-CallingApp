@@ -5,11 +5,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
@@ -18,6 +20,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,6 +31,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -320,15 +324,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_verify) {
-            Bundle bundle = new Bundle();
-            bundle.putString("gmail", mAuth.getCurrentUser().getEmail());
-            ValidateFragment fragment = new ValidateFragment();
-            fragment.setArguments(bundle);
-
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, fragment, "VALIDATE_FRAGMENT")
-                    .addToBackStack(null).commit();
-
+            showVerifyFragment();
         } else if (id == R.id.nav_history) {
             Bundle bundle = new Bundle();
             bundle.putString("gmail", mAuth.getCurrentUser().getEmail());
@@ -340,8 +336,8 @@ public class MainActivity extends AppCompatActivity
                     .addToBackStack(null).commit();
         } else if (id == R.id.nav_signout) {
             mAuth.signOut();
-        } else if (id == R.id.nav_share) {
-
+        } else if (id == R.id.nav_current_trip) {
+            checkCurrentTrip();
         }else if (id == R.id.nav_home) {
             pickupFragment = new PickupFragment();
             pickupFragment.setRequestTrip(requestTrip);
@@ -354,6 +350,58 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return false;
+    }
+
+    public void showVerifyFragment() {
+        ValidateFragment fragment = new ValidateFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, fragment, "VALIDATE_FRAGMENT")
+                .addToBackStack(null).commit();
+    }
+
+    private void checkCurrentTrip() {
+        String freeUrl = getResources().getString(R.string.url_check_ongoing_trip)+ MainActivity.mAuth.getCurrentUser().getEmail();
+        JsonObjectRequest freeRequest = new JsonObjectRequest
+                (Request.Method.GET, freeUrl, null, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        boolean free = false;
+                        try {
+                            free = response.getBoolean("FREE");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        if(free){
+                            if(getApplicationContext()==null){
+                                return;
+                            }
+                            Snackbar snackbar = Snackbar.make(getCurrentFocus(),"You have no ongoing trip",Snackbar.LENGTH_LONG);
+                            snackbar.show();
+                        }else {
+                            String tripID = "";
+                            try {
+                                tripID = response.getString("TRIP_ID");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            Bundle bundle = new Bundle();
+                            bundle.putString("TRIP_ID", tripID);
+                            showOnTripFragment(bundle);
+                        }
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        if(getApplicationContext()==null){
+                            return;
+                        }
+                        Toast.makeText(getApplicationContext(),"Error, please try again.", Toast.LENGTH_LONG);
+                    }
+                });
+        MyVolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(freeRequest);
+
     }
 
 

@@ -281,7 +281,6 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
                             if(getContext()==null){
                                 return;
                             }
-                            Toast.makeText(getContext(),"Account verified.", Toast.LENGTH_SHORT).show();
                             checkOngoingTrip();
                         }else {
                             notifyAccountNotVerified();
@@ -389,22 +388,33 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
         if(getContext()==null){
             return;
         }
-        Alerter.clearCurrent(getActivity());
-        alert = Alerter.create(getActivity())
-                .setTitle("You already have an ongoing trip !")
-                .setText("Click here to track your current trip. You can not order multiple trips at the same time.")
-                .enableIconPulse(true)
-                .setBackgroundColorRes(R.color.red_error)
-                .setDuration(10000)
-                .setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Bundle bundle = new Bundle();
-                        bundle.putString("TRIP_ID", tripID);
-                        ((MainActivity)getActivity()).showOnTripFragment(bundle);
-                    }
-                })
-                .show();
+//        Alerter.clearCurrent(getActivity());
+//        alert = Alerter.create(getActivity())
+//                .setTitle("You already have an ongoing trip !")
+//                .setText("Click here to track your current trip. You can not order multiple trips at the same time.")
+//                .enableIconPulse(true)
+//                .setBackgroundColorRes(R.color.red_error)
+//                .setDuration(10000)
+//                .setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        Bundle bundle = new Bundle();
+//                        bundle.putString("TRIP_ID", tripID);
+//                        ((MainActivity)getActivity()).showOnTripFragment(bundle);
+//                    }
+//                })
+//                .show();
+
+        Snackbar snackbar = Snackbar.make(getActivity().getCurrentFocus(),"You already have an ongoing trip",Snackbar.LENGTH_LONG);
+        snackbar.setAction("View", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bundle bundle = new Bundle();
+                bundle.putString("TRIP_ID", tripID);
+                ((MainActivity)getActivity()).showOnTripFragment(bundle);
+            }
+        });
+        snackbar.show();
 
         button.setProgress(0);
     }
@@ -413,7 +423,14 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
         if(getContext()==null){
             return;
         }
-        Toast.makeText(getContext(),"Account not verified.", Toast.LENGTH_LONG).show();
+        Snackbar snackbar = Snackbar.make(getActivity().getCurrentFocus(),"Please verify your account",Snackbar.LENGTH_LONG);
+        snackbar.setAction("Verify", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((MainActivity)getActivity()).showVerifyFragment();
+            }
+        });
+        snackbar.show();
         button.setProgress(0);
     }
 

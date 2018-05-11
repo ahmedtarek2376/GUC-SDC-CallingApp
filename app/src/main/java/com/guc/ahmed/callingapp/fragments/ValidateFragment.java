@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.guc.ahmed.callingapp.MainActivity;
 import com.guc.ahmed.callingapp.apiclasses.ApiCall;
 import com.guc.ahmed.callingapp.R;
 
@@ -62,10 +63,10 @@ public class ValidateFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Object dataTransfer[] = new Object[3];
-                String url = "http://10.0.2.2:8080/profile/verify";
+                String url = getResources().getString(R.string.url_verify_profile);
                 dataTransfer[0] = url;
                 dataTransfer[1] = gucMail.getText().toString();
-                dataTransfer[2]= bundle.getString("gmail");
+                dataTransfer[2]= MainActivity.mAuth.getCurrentUser().getEmail();
                 VerificationAsync verificationAsync = new VerificationAsync(getActivity());
                 verificationAsync.execute(dataTransfer);
                 Toast.makeText(getActivity(), "Sending verification mail...", Toast.LENGTH_SHORT).show();

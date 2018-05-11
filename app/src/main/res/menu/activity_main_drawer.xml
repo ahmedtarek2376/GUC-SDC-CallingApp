@@ -9,17 +9,21 @@
             android:icon="@drawable/ic_home_black_24dp"
             android:title="Home" />
         <item
-            android:id="@+id/nav_verify"
-            android:icon="@drawable/ic_send_verify"
-            android:title="Verify account" />
+            android:id="@+id/nav_current_trip"
+            android:icon="@drawable/ic_directions_car_black_24dp"
+            android:title="Current Trip" />
         <item
             android:id="@+id/nav_history"
             android:icon="@drawable/ic_history_black_24dp"
-            android:title="Trip history" />
+            android:title="Trip History" />
+        <item
+            android:id="@+id/nav_verify"
+            android:icon="@drawable/ic_send_verify"
+            android:title="Verify Account" />
         <item
             android:id="@+id/nav_signout"
             android:icon="@drawable/ic_close_signout"
-            android:title="Sign out" />
+            android:title="Sign Out" />
     </group>
 
     <item android:title="">

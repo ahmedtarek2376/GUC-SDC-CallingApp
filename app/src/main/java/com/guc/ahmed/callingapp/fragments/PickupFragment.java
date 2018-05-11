@@ -452,6 +452,9 @@ public class PickupFragment extends Fragment
     }
 
     private void drawPins(ArrayList<GucPlace> places) {
+        if(getContext()==null){
+            return;
+        }
         CustomMarker customMarker = new CustomMarker(getContext());
         customMarker.setImage(R.drawable.custom_marker_pin);
         for (GucPlace place : places){

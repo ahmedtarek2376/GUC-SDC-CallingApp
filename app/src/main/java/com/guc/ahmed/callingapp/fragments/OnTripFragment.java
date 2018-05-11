@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
+import android.widget.Chronometer;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +45,8 @@ import com.guc.ahmed.callingapp.objects.Trip;
 import com.guc.ahmed.callingapp.objects.TripEvent;
 
 import org.json.JSONObject;
+
+import java.util.Date;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -82,6 +85,8 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
     private String mTripID;
     private String mGmail;
     private String mEvent;
+    private Chronometer timeElapsed;
+    private Long startTime;
 
     public OnTripFragment() {
         // Required empty public constructor
@@ -131,6 +136,8 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
         destination2Txt = view.findViewById(R.id.destination_2_txt);
         destination3Txt = view.findViewById(R.id.destination_3_txt);
         tripPath = view.findViewById(R.id.trip_path);
+
+        timeElapsed = view.findViewById(R.id.time_elapsed);
 
         if(getArguments()!=null){
             mTripID = getArguments().getString("TRIP_ID");
@@ -208,56 +215,25 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
         MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
     }
 
+    private void startElapsedTime() {
+        if(startTime == null){
+            if(currentTrip.getStartTime()!=null){
+                startTime = currentTrip.getStartTime().getTime();
+                long elapsed = SystemClock.elapsedRealtime() + startTime - new Date().getTime();
+                timeElapsed.setBase(elapsed);
+                timeElapsed.start();
+            }
+        }
+    }
+
     private void updateUI() {
         drawTripPathGraph();
-
+        startElapsedTime();
         String status = "Unknown";
         String event = currentTrip.getEvent();
-//        if(currentTrip.getEndTime()!=null){
-//            status = "Trip Ended";
-//            buttonCancel.setVisibility(View.GONE);
-//            buttonEnd.setVisibility(View.GONE);
-//            buttonStart.setVisibility(View.GONE);
-//            buttonContinue.setVisibility(View.GONE);
-//        }else if(currentTrip.getCancelTime()!=null){
-//            status = "Trip Canceled";
-//            buttonCancel.setVisibility(View.GONE);
-//            buttonEnd.setVisibility(View.GONE);
-//            buttonStart.setVisibility(View.GONE);
-//            buttonContinue.setVisibility(View.GONE);
-//        }else if(mEvent.equalsIgnoreCase("ARRIVE_DESTINATION")){
-//            status = "Arrived Destination";
-//            buttonCancel.setVisibility(View.GONE);
-//            buttonEnd.setVisibility(View.VISIBLE);
-//            buttonStart.setVisibility(View.GONE);
-//            buttonContinue.setVisibility(View.VISIBLE);
-//        }else if(mEvent.equalsIgnoreCase("ARRIVE_FINAL")){
-//            status = "Arrived Last Destination";
-//            buttonCancel.setVisibility(View.GONE);
-//            buttonEnd.setVisibility(View.VISIBLE);
-//            buttonStart.setVisibility(View.GONE);
-//            buttonContinue.setVisibility(View.GONE);
-//        }else if(currentTrip.getStartTime()!=null){
-//            status = "Moving in Car";
-//            buttonCancel.setVisibility(View.GONE);
-//            buttonEnd.setVisibility(View.VISIBLE);
-//            buttonStart.setVisibility(View.GONE);
-//            buttonContinue.setVisibility(View.GONE);
-//        }else if(currentTrip.getCarArriveTime()!=null){
-//            status = "Car Arrived";
-//            buttonCancel.setVisibility(View.VISIBLE);
-//            buttonEnd.setVisibility(View.GONE);
-//            buttonStart.setVisibility(View.VISIBLE);
-//            buttonContinue.setVisibility(View.GONE);
-//        }
-//        else {
-//            buttonCancel.setVisibility(View.VISIBLE);
-//            buttonEnd.setVisibility(View.GONE);
-//            buttonStart.setVisibility(View.GONE);
-//            status = "Car on the way";
-//        }
 
         if(event.equalsIgnoreCase(TripEvent.END.name())){
+            timeElapsed.stop();
             status = "Trip Ended";
             buttonCancel.setVisibility(View.GONE);
             buttonEnd.setVisibility(View.GONE);
@@ -265,6 +241,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
             buttonContinue.setVisibility(View.GONE);
             buttonDone.setVisibility(View.VISIBLE);
         }else if(event.equalsIgnoreCase(TripEvent.CANCEL.name())){
+            timeElapsed.stop();
             status = "Trip Canceled";
             buttonCancel.setVisibility(View.GONE);
             buttonEnd.setVisibility(View.GONE);
@@ -330,41 +307,47 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
     }
 
     private void drawCar() {
-        carhandler = new Handler();
 
-        updateCarLocation = new Runnable() {
-            @Override
-            public void run() {
+        if(carhandler != null){
+            resumeCarsUpdates();
+        }else {
 
-                String url = getResources().getString(R.string.url_get_car_details) + currentTrip.getCarID();
-                Log.v("CarDetails", url);
+            carhandler = new Handler();
 
-                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
-                        (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+            updateCarLocation = new Runnable() {
+                @Override
+                public void run() {
 
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                Log.v("CarDetails", "It worked");
-                                retrievedCar = gson.fromJson(response.toString(), Car.class);
-                                animateCar();
-                            }
-                        }, new Response.ErrorListener() {
+                    String url = getResources().getString(R.string.url_get_car_details) + currentTrip.getCarID();
+                    Log.v("CarDetails", url);
 
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Activity activity = getActivity();
-                                if(activity != null && isAdded())
-                                    Log.v("CarDetails", "It didnt work");
-                            }
-                        });
+                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
+                            (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
 
-                MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    Log.v("CarDetails", "It worked");
+                                    retrievedCar = gson.fromJson(response.toString(), Car.class);
+                                    animateCar();
+                                }
+                            }, new Response.ErrorListener() {
 
-                carhandler.postDelayed(updateCarLocation, 3000);
-            }
-        };
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Activity activity = getActivity();
+                                    if (activity != null && isAdded())
+                                        Log.v("CarDetails", "It didnt work");
+                                }
+                            });
 
-        carhandler.postDelayed(updateCarLocation, 0);
+                    MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
+
+                    carhandler.postDelayed(updateCarLocation, 3000);
+                }
+            };
+
+            carhandler.post(updateCarLocation);
+        }
     }
 
 
@@ -423,6 +406,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
     public void onPause() {
         super.onPause();
         stopCarsUpdates();
+        timeElapsed.stop();
     }
 
     public void stopCarsUpdates() {
@@ -430,6 +414,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
             carhandler.removeCallbacks(updateCarLocation);
         }
     }
+
 
     @Override
     public void onClick(View v) {
