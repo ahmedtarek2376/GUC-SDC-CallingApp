@@ -217,7 +217,7 @@ public class PickupFragment extends Fragment
         mMap.getUiSettings().setTiltGesturesEnabled(true);
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMap.setMinZoomPreference(16.0f);
-        mMap.setBuildingsEnabled(true);
+        mMap.setBuildingsEnabled(false);
         mMap.getUiSettings().setMapToolbarEnabled(false);
 
         boolean success = googleMap.setMapStyle(new MapStyleOptions(getResources()

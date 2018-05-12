@@ -1,6 +1,7 @@
 package com.guc.ahmed.callingapp.fragments;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +20,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.akexorcist.googledirection.DirectionCallback;
+import com.akexorcist.googledirection.GoogleDirection;
+import com.akexorcist.googledirection.constant.TransportMode;
+import com.akexorcist.googledirection.model.Direction;
+import com.akexorcist.googledirection.model.Leg;
+import com.akexorcist.googledirection.model.Route;
+import com.akexorcist.googledirection.util.DirectionConverter;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -33,20 +41,28 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.guc.ahmed.callingapp.MainActivity;
 import com.guc.ahmed.callingapp.R;
 import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
+import com.guc.ahmed.callingapp.gucpoints.GucPlace;
 import com.guc.ahmed.callingapp.objects.Car;
 import com.guc.ahmed.callingapp.gucpoints.GucPoints;
 import com.guc.ahmed.callingapp.map.CustomMarker;
 import com.guc.ahmed.callingapp.objects.Trip;
+import com.guc.ahmed.callingapp.objects.TripDestination;
 import com.guc.ahmed.callingapp.objects.TripEvent;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -87,6 +103,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
     private String mEvent;
     private Chronometer timeElapsed;
     private Long startTime;
+    private HashMap<String, Marker> markers;
 
     public OnTripFragment() {
         // Required empty public constructor
@@ -150,6 +167,8 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        markers = new HashMap<>();
+
         return view;
     }
 
@@ -202,6 +221,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
                         Log.v("CarDetails", "It worked");
                         currentTrip = gson.fromJson(response.toString(), Trip.class);
                         drawCar();
+                        addMarkersToMap();
                         updateUI();
                     }
                 }, new Response.ErrorListener() {
@@ -214,6 +234,80 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
 
         MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
     }
+
+    public void addMarkersToMap(){
+
+        for(Map.Entry<String, Marker> entry : markers.entrySet()){
+            Marker marker = entry.getValue();
+            marker.remove();
+        }
+
+        CustomMarker customMarker = new CustomMarker(getContext());
+
+        //pickup marker
+        customMarker.setImage(R.drawable.custom_marker_start);
+        customMarker.setText(GucPoints.getGucPlaceByLatLng(currentTrip.getPickupLocation()).getName());
+        markers.put("PICKUP_LOCATION",
+                mMap.addMarker(new MarkerOptions().position(GucPoints.getGucPlaceByLatLng(currentTrip.getPickupLocation()).getLatLng())
+                        .title(GucPoints.getGucPlaceByLatLng(currentTrip.getPickupLocation()).getName()).icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())))
+        );
+
+        //destination markers
+        ArrayList<GucPlace> destinationArray = new ArrayList<>();
+        for (TripDestination tripDestination : currentTrip.getDestinations()){
+            destinationArray.add( GucPoints.getGucPlaceByLatLng(tripDestination.getLocation()) );
+        }
+        customMarker.setImage(R.drawable.custom_marker_end);
+        int i = 1;
+        for(GucPlace place : destinationArray){
+            customMarker.setText(place.getName());
+            markers.put( "DESTINATION_" + i,
+                    mMap.addMarker(new MarkerOptions().position(place.getLatLng())
+                            .title(place.getName()).icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())))
+            );
+            i++;
+        }
+
+        drawTripRoute();
+
+    }
+
+    private void drawTripRoute() {
+        List<LatLng> waypoints = new ArrayList<>();
+        for (TripDestination tripDestination : currentTrip.getDestinations()){
+            waypoints.add(tripDestination.getLocation());
+        }
+        GoogleDirection.withServerKey(getResources().getString(R.string.google_maps_key))
+                .from(currentTrip.getPickupLocation())
+                .and(waypoints)
+                .to(waypoints.get(waypoints.size()-1))
+                .transportMode(TransportMode.DRIVING)
+                .execute(new DirectionCallback() {
+                    @Override
+                    public void onDirectionSuccess(Direction direction, String rawBody) {
+                        if(getContext()==null){
+                            return;
+                        }
+                        if(direction.isOK()) {
+                            Route route = direction.getRouteList().get(0);
+                            for (Leg leg : route.getLegList()) {
+                                ArrayList<LatLng> directionPositionList = leg.getDirectionPoint();
+                                PolylineOptions polylineOptions = DirectionConverter.createPolyline(getActivity(), directionPositionList, 3, Color.GRAY);
+                                mMap.addPolyline(polylineOptions);
+                            }
+                        } else {
+                            // Do something
+                        }
+                    }
+
+                    @Override
+                    public void onDirectionFailure(Throwable t) {
+                        // Do something
+                    }
+                });
+
+    }
+
 
     private void startElapsedTime() {
         if(startTime == null){
@@ -287,11 +381,12 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
 
         mMap = googleMap;
         mMap.clear();
+
+        mMap.getUiSettings().setTiltGesturesEnabled(true);
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        mMap.getUiSettings().setAllGesturesEnabled(false);
+        mMap.setMinZoomPreference(16.0f);
         mMap.setBuildingsEnabled(false);
         mMap.getUiSettings().setMapToolbarEnabled(false);
-        mMap.getUiSettings().setScrollGesturesEnabled(true);
 
         boolean success = googleMap.setMapStyle(new MapStyleOptions(getResources()
                 .getString(R.string.style_json)));
@@ -301,7 +396,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
         //to be removed
         LatLng latLng = new LatLng(29.987243, 31.441902);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(17));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
 
         updateData(null);
     }
@@ -358,9 +453,9 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
             customMarker.setImage(R.drawable.ic_directions_car_black_24dp);
             carMarker = mMap.addMarker(new MarkerOptions().position(retrievedCar.getLatLng())
                     .title("CAR").icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(retrievedCar.getLatLng()));
+//            mMap.moveCamera(CameraUpdateFactory.newLatLng(retrievedCar.getLatLng()));
         } else {
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(retrievedCar.getLatLng()));
+//            mMap.moveCamera(CameraUpdateFactory.newLatLng(retrievedCar.getLatLng()));
             if(!retrievedCar.getLatLng().equals(carMarker.getPosition())){
                 animateMarker(carMarker, retrievedCar.getLatLng(), false);
             }
@@ -386,7 +481,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
                         * startLatLng.latitude;
 
                 marker.setPosition(new LatLng(lat, lng));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(lat, lng)));
+//                mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(lat, lng)));
 
                 if (t < 1.0) {
                     // Post again 16ms later.
