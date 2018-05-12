@@ -24,8 +24,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="2"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="10dp"
+            app:cardElevation="1dp"
+            app:cardCornerRadius="5dp"
             app:cardUseCompatPadding="true"
             app:contentPadding="10dp">
 
@@ -39,7 +39,7 @@
                     android:layout_height="wrap_content"
                     android:text="Trip Details"
                     android:textSize="20sp"
-                    android:textColor="@color/colorAccent"/>
+                    android:textAlignment="center"/>
 
             <LinearLayout
                 android:layout_width="match_parent"

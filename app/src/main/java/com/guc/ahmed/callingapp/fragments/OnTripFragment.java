@@ -1,6 +1,8 @@
 package com.guc.ahmed.callingapp.fragments;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -104,6 +106,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
     private Chronometer timeElapsed;
     private Long startTime;
     private HashMap<String, Marker> markers;
+    private String submitTripEventUrl;
 
     public OnTripFragment() {
         // Required empty public constructor
@@ -175,7 +178,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
     @Override
     public void onResume() {
         super.onResume();
-        actionBar.setTitle("Your Trip");
+        actionBar.setTitle("Your Ride");
         if(mMap!=null){
             updateData(null);
         }
@@ -513,31 +516,99 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
 
     @Override
     public void onClick(View v) {
-        String url = "";
+        submitTripEventUrl = "";
 
         final ActionProcessButton button = (ActionProcessButton)v;
-        button.setProgress(1);
 
         switch (v.getId()) {
 
             case R.id.on_trip_start:
-                url = getResources().getString(R.string.url_trip_start) + mGmail;
+                submitTripEventUrl = getResources().getString(R.string.url_trip_start) + mGmail;
                 mEvent = "START";
+                AlertDialog startDialog = new AlertDialog.Builder(getContext()).create();
+                startDialog.setTitle("Confirm Start");
+                startDialog.setMessage("Car will start moving. Are you sure you want to start your ride ?");
+                startDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        button.setProgress(1);
+                        submitTripEvent();
+                    }
+                });
+                startDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                startDialog.show();
+
                 break;
 
             case R.id.on_trip_continue:
-                url = getResources().getString(R.string.url_trip_continue) + mGmail;
+                submitTripEventUrl = getResources().getString(R.string.url_trip_continue) + mGmail;
                 mEvent = "CONTINUE";
+                AlertDialog continueDialog = new AlertDialog.Builder(getContext()).create();
+                continueDialog.setTitle("Confirm Continue");
+                continueDialog.setMessage("Car will start moving. Are you sure you want to continue to your next destination ?");
+                continueDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        button.setProgress(1);
+                        submitTripEvent();
+                    }
+                });
+                continueDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                continueDialog.show();
                 break;
 
             case R.id.on_trip_end:
-                url = getResources().getString(R.string.url_trip_end) + mGmail;
+                submitTripEventUrl = getResources().getString(R.string.url_trip_end) + mGmail;
                 mEvent = "END";
+                AlertDialog endDialog = new AlertDialog.Builder(getContext()).create();
+                endDialog.setTitle("Confirm End");
+                endDialog.setMessage("Are you sure you want to end your ride ?");
+                endDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        button.setProgress(1);
+                        submitTripEvent();
+                    }
+                });
+                endDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                endDialog.show();
                 break;
 
             case R.id.on_trip_cancel:
-                url = getResources().getString(R.string.url_trip_cancel) + mGmail;
+                submitTripEventUrl = getResources().getString(R.string.url_trip_cancel) + mGmail;
                 mEvent = "CANCEL";
+                AlertDialog cancelDialog = new AlertDialog.Builder(getContext()).create();
+                cancelDialog.setTitle("Confirm Cancel");
+                cancelDialog.setMessage("Are you sure you want to cancel your ride ?");
+                cancelDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        button.setProgress(1);
+                        submitTripEvent();
+                    }
+                });
+                cancelDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                cancelDialog.show();
                 break;
                 
             case R.id.on_trip_done:
@@ -549,12 +620,14 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
                 break;
         }
 
+    }
+
+    private void submitTripEvent() {
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
-                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                (Request.Method.GET, submitTripEventUrl, null, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.v("CarDetails", "It worked");
                         currentTrip = gson.fromJson(response.toString(), Trip.class);
                         updateUI();
                     }

@@ -333,7 +333,7 @@ public class DestinationFragment extends Fragment
             recyclerLayout.setVisibility(View.VISIBLE);
             return true;
         }else {
-            Snackbar.make(getView(),"You can choose maximum 3 destinations",Snackbar.LENGTH_SHORT);
+            Snackbar.make(getView(),"You can choose maximum 3 destinations",Snackbar.LENGTH_SHORT).show();
             return false;
         }
     }

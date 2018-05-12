@@ -458,7 +458,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
             fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
             mMap.setMyLocationEnabled(true);
         }
-        actionBar.setTitle("Your RequestTrip");
+        actionBar.setTitle("Request Car");
 
         CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.confirm_fragment);
         Snackbar snackbar = Snackbar.make(coordinatorLayout, "Please revise your trip details before requesting", Snackbar.LENGTH_LONG);
