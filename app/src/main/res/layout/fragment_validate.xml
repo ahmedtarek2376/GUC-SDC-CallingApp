@@ -1,35 +1,51 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:custom="http://schemas.android.com/apk/res-auto"
     tools:context="com.guc.ahmed.callingapp.fragments.ValidateFragment">
 
-
-    <LinearLayout
+    <android.support.v7.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        custom:cardUseCompatPadding="true"
+        custom:cardCornerRadius="5dp"
+        android:elevation="1dp"
+        custom:contentPaddingRight="16dp"
+        custom:contentPaddingLeft="16dp"
+        custom:contentPaddingTop="24dp"
+        custom:contentPadding="24dp">
 
-        <EditText
-            android:id="@+id/guc_mail_edit_text"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:hint="Enter your GUC mail"
-            />
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        <com.dd.processbutton.FlatButton
-            android:id="@+id/verify_button"
-            android:layout_gravity="center"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Send verification mail"
-            android:textSize="18sp"
-            android:textColor="@android:color/white"
-            custom:pb_colorNormal="@color/colorAccent"
-            custom:pb_colorPressed="@android:color/holo_blue_dark" />
-    </LinearLayout>
+            <EditText
+                android:id="@+id/guc_mail_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:hint="Enter your GUC mail"
+                android:layout_marginBottom="20dp"
+                />
 
-</RelativeLayout>
+            <com.dd.processbutton.iml.ActionProcessButton
+                android:id="@+id/verify_button"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Send verification mail"
+                android:textSize="18sp"
+                android:textColor="@android:color/white"
+                custom:pb_colorNormal="@color/colorAccent"
+                custom:pb_colorPressed="@android:color/holo_blue_dark" />
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
+
+
+
+
+</android.support.design.widget.CoordinatorLayout>

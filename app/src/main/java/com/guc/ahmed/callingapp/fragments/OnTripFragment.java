@@ -1,14 +1,22 @@
 package com.guc.ahmed.callingapp.fragments;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -34,6 +42,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.dd.processbutton.iml.ActionProcessButton;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -69,7 +82,7 @@ import java.util.Map;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class OnTripFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener {
+public class OnTripFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener, GoogleMap.OnMyLocationButtonClickListener {
 
 
     private View view;
@@ -109,6 +122,10 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
     private Long startTime;
     private HashMap<String, Marker> markers;
     private String submitTripEventUrl;
+
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationRequest locationRequest;
+
 
     public OnTripFragment() {
         // Required empty public constructor
@@ -169,6 +186,9 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
         }
         mGmail = MainActivity.mAuth.getCurrentUser().getEmail();
 
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
+
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager()
                 .findFragmentById(R.id.map);
@@ -182,6 +202,13 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
     @Override
     public void onResume() {
         super.onResume();
+        if(mMap != null) {
+            checkLocationPermission();
+            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+            mMap.setMyLocationEnabled(true);
+            mMap.setOnMyLocationButtonClickListener(this);
+
+        }
         actionBar.setTitle("Your Ride");
         if(mMap!=null){
             updateData(null);
@@ -401,10 +428,19 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
         mMap.setBuildingsEnabled(false);
         mMap.getUiSettings().setMapToolbarEnabled(false);
 
+
+
+        mMap.setPadding(0,250,0,250);
+
         boolean success = googleMap.setMapStyle(new MapStyleOptions(getResources()
                 .getString(R.string.style_json)));
         // Constrain the camera target to the GUC bounds.
         mMap.setLatLngBoundsForCameraTarget(GucPoints.GUC);
+
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(3000);
+        locationRequest.setFastestInterval(3000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         //to be removed
         LatLng latLng = new LatLng(29.987243, 31.441902);
@@ -412,7 +448,82 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
         mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
 
         updateData(null);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if (ContextCompat.checkSelfPermission(getActivity(),
+                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                checkLocationPermission();
+            }else{
+                fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+                mMap.setMyLocationEnabled(true);
+                mMap.setOnMyLocationButtonClickListener(this);
+            }
+        }else {
+            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+            mMap.setMyLocationEnabled(true);
+            mMap.setOnMyLocationButtonClickListener(this);
+        }
     }
+
+    private void checkLocationPermission() {
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            if(ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)){
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Permission Missing")
+                        .setMessage("Please give the missing permissions for the app to function")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                            }
+                        })
+                        .create().show();
+            }else {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            }
+        }
+        else{
+            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+            mMap.setMyLocationEnabled(true);
+            mMap.setOnMyLocationButtonClickListener(this);
+
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){
+            case 1: if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                if(ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ){
+                    fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+                    mMap.setMyLocationEnabled(true);
+                    mMap.setOnMyLocationButtonClickListener(this);
+
+                }
+
+            } else {
+                Toast.makeText(getContext(), "Please provide location permission", Toast.LENGTH_LONG).show();
+            }
+                break;
+        }
+    }
+
+    private LatLng lastLocation;
+    private LocationCallback locationCallback = new LocationCallback(){
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            super.onLocationResult(locationResult);
+            Log.v("LocationCallback", "UPDATING LOCATION");
+            for (Location location : locationResult.getLocations()){
+                lastLocation = new LatLng(location.getLatitude(), location.getLongitude());
+            }
+        }
+    };
 
     private void drawCar() {
 
@@ -513,6 +624,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
     @Override
     public void onPause() {
         super.onPause();
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
         stopCarsUpdates();
         timeElapsed.stop();
     }
@@ -648,7 +760,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
                         if(getContext()==null){
                             return;
                         }
-                        Toast.makeText(getContext(),"Error, please try again.", Toast.LENGTH_LONG);
+                        Toast.makeText(getContext(),"Error, please try again.", Toast.LENGTH_LONG).show();
                     }
                 });
 
@@ -688,5 +800,13 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
 
         }
         statusTxt.setText(status);
+    }
+
+    @Override
+    public boolean onMyLocationButtonClick() {
+        if(mMap!=null){
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(retrievedCar.getLatLng()));
+        }
+        return true;
     }
 }

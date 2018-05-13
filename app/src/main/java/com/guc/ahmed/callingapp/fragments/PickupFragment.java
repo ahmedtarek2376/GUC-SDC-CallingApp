@@ -155,15 +155,6 @@ public class PickupFragment extends Fragment
             mMap.setMyLocationEnabled(true);
         }
         actionBar.setTitle("Choose Pickup Location");
-//        alert = Alerter.create(getActivity())
-//                .setTitle("Choose Pickup Location")
-//                .setText("Click on a pin on the map to choose your pickup location.")
-//                .enableSwipeToDismiss()
-//                .enableIconPulse(true)
-//                .setIcon(R.drawable.custom_marker_start)
-//                .setBackgroundColorRes(R.color.colorAccent)
-//                .setDuration(5000)
-//                .show();
 
         CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.pickup_fragment);
         Snackbar snackbar = Snackbar.make(coordinatorLayout, "Click on a pin to choose your pickup location", Snackbar.LENGTH_LONG);
@@ -232,16 +223,6 @@ public class PickupFragment extends Fragment
         addMarkersToMap();
 
         addCarsToMap();
-
-//        Polygon polygon = mMap.addPolygon(
-//                gucBorders
-//                        .strokeColor(Color.BLUE).strokeWidth(5)
-//                        .fillColor(Color.BLUE)
-//                        .strokeJointType(JointType.BEVEL)
-//        );
-//        polygon.setFillColor(Color.argb(
-//                20, Color.red(Color.BLUE), Color.green(Color.BLUE),
-//                Color.blue(Color.BLUE)));
 
         locationRequest = new LocationRequest();
         locationRequest.setInterval(3000);

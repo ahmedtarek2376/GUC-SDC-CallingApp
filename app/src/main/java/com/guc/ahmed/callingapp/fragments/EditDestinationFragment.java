@@ -119,8 +119,6 @@ public class EditDestinationFragment extends Fragment
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_edit_destination, container, false);
-        Log.v("DESTINATION", "onCreateView");
-
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
@@ -206,14 +204,12 @@ public class EditDestinationFragment extends Fragment
         super.onPause();
         Alerter.clearCurrent(getActivity());
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-        Log.v("DESTINATION", "onPause");
     }
 
     @Override
     public void onStop() {
         super.onStop();
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-        Log.v("DESTINATION", "onStop");
     }
 
     public void setRequestTrip(Trip trip){
@@ -233,7 +229,6 @@ public class EditDestinationFragment extends Fragment
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        Log.v("DESTINATION", "onMapCreated");
         mMap = googleMap;
 
         mMap.clear();
@@ -257,16 +252,6 @@ public class EditDestinationFragment extends Fragment
         addMarkersToMap();
 
         mMap.setOnInfoWindowClickListener(onInfoWindowClickListener);
-
-//        Polygon polygon = mMap.addPolygon(
-//                gucBorders
-//                        .strokeColor(Color.BLUE).strokeWidth(5)
-//                        .fillColor(Color.BLUE)
-//                        .strokeJointType(JointType.BEVEL)
-//        );
-//        polygon.setFillColor(Color.argb(
-//                20, Color.red(Color.BLUE), Color.green(Color.BLUE),
-//                Color.blue(Color.BLUE)));
 
         locationRequest = new LocationRequest();
         locationRequest.setInterval(3000);
@@ -380,7 +365,6 @@ public class EditDestinationFragment extends Fragment
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.v("EDITDESTINATION", response.toString());
 
                         Trip tripp = gson.fromJson(response.toString(), Trip.class);
                         Bundle bundle = new Bundle();
@@ -536,9 +520,6 @@ public class EditDestinationFragment extends Fragment
             if(chosenDestinations.size()>0){
                 parent.setVisibility(View.VISIBLE);
             }
-
-            Log.v("ADAPTER" , "onCreateViewHolder");
-
             return new MyAdapter.ViewHolder(v);
         }
 
@@ -546,7 +527,7 @@ public class EditDestinationFragment extends Fragment
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.destinationName.setText(chosenDestinations.get(position).getName());
 
-            if(requestTrip.getDestinations().get(position).isArrived()){
+            if(position<requestTrip.getDestinations().size() && requestTrip.getDestinations().get(position).isArrived()){
                 holder.handleView.setImageResource(R.drawable.ic_done_black_24dp);
                 holder.handleView.setColorFilter(getResources().getColor(R.color.text_grey_light));
                 holder.deleteView.setVisibility(View.GONE);
@@ -583,7 +564,6 @@ public class EditDestinationFragment extends Fragment
                 destinationTxt.setVisibility(View.GONE);
             }
 
-            Log.v("ADAPTER" , "onBindViewHolder");
         }
 
         @Override
@@ -595,7 +575,6 @@ public class EditDestinationFragment extends Fragment
         public void onAttachedToRecyclerView(RecyclerView recyclerView) {
             super.onAttachedToRecyclerView(recyclerView);
             mRecyclerView = recyclerView;
-            Log.v("ADAPTER" , "onAttachedToRecyclerView");
         }
 
         @Override
@@ -636,7 +615,6 @@ public class EditDestinationFragment extends Fragment
 
                 handleView = (ImageView) itemView.findViewById(R.id.handle);
 
-                Log.v("ADAPTER" , "ViewHolder");
             }
 
             @Override
