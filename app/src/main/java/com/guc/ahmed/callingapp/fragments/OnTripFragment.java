@@ -94,6 +94,8 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
     private TextView destination2Txt;
     private TextView destination3Txt;
 
+    private TextView edit;
+
     private Trip currentTrip;
     private GoogleMap mMap;
     private Handler carhandler;
@@ -156,6 +158,8 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
         destination2Txt = view.findViewById(R.id.destination_2_txt);
         destination3Txt = view.findViewById(R.id.destination_3_txt);
         tripPath = view.findViewById(R.id.trip_path);
+
+        edit = view.findViewById(R.id.on_trip_edit);
 
         timeElapsed = view.findViewById(R.id.time_elapsed);
 
@@ -223,6 +227,12 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
                     public void onResponse(JSONObject response) {
                         Log.v("CarDetails", "It worked");
                         currentTrip = gson.fromJson(response.toString(), Trip.class);
+                        edit.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                ((MainActivity)getActivity()).showEditDestinationFragment(currentTrip);
+                            }
+                        });
                         drawCar();
                         addMarkersToMap();
                         updateUI();
@@ -331,7 +341,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
 
         if(event.equalsIgnoreCase(TripEvent.END.name())){
             timeElapsed.stop();
-            status = "Trip Ended";
+            status = "Ride Ended";
             buttonCancel.setVisibility(View.GONE);
             buttonEnd.setVisibility(View.GONE);
             buttonStart.setVisibility(View.GONE);
@@ -339,7 +349,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
             buttonDone.setVisibility(View.VISIBLE);
         }else if(event.equalsIgnoreCase(TripEvent.CANCEL.name())){
             timeElapsed.stop();
-            status = "Trip Canceled";
+            status = "Ride Canceled";
             buttonCancel.setVisibility(View.GONE);
             buttonEnd.setVisibility(View.GONE);
             buttonStart.setVisibility(View.GONE);
@@ -357,8 +367,8 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
             buttonEnd.setVisibility(View.VISIBLE);
             buttonStart.setVisibility(View.GONE);
             buttonContinue.setVisibility(View.GONE);
-        }else if(event.equalsIgnoreCase(TripEvent.START.name()) || event.equalsIgnoreCase(TripEvent.CONTINUE.name())){
-            status = "On Trip";
+        }else if(event.equalsIgnoreCase(TripEvent.START.name()) || event.equalsIgnoreCase(TripEvent.CONTINUE.name()) || event.equalsIgnoreCase(TripEvent.CHANGE_DESTINATION.name())){
+            status = "On Ride";
             buttonCancel.setVisibility(View.GONE);
             buttonEnd.setVisibility(View.VISIBLE);
             buttonStart.setVisibility(View.GONE);

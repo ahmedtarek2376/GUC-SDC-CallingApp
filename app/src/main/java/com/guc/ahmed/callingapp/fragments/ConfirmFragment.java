@@ -361,12 +361,15 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.v("Confirmed RequestTrip", response.toString());
-                        Toast.makeText(getContext(),"RequestTrip successfully requested.",Toast.LENGTH_SHORT).show();
                         createdTrip = gson.fromJson(response.toString(),Trip.class);
                         Bundle bundle = new Bundle();
                         bundle.putString("EVENT","CREATE");
                         bundle.putString("CAR_ID",createdTrip.getCarID());
                         bundle.putString("TRIP_ID",createdTrip.getId());
+                        if(getContext()==null){
+                            return;
+                        }
+                        Toast.makeText(getContext(),"RequestTrip successfully requested.",Toast.LENGTH_SHORT).show();
                         ((MainActivity)getActivity()).showOnTripFragment(bundle);
                     }
                 }, new Response.ErrorListener() {

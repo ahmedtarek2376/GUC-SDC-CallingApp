@@ -45,6 +45,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
+import com.guc.ahmed.callingapp.fragments.EditDestinationFragment;
 import com.guc.ahmed.callingapp.objects.RequestTrip;
 import com.guc.ahmed.callingapp.fragments.ConfirmFragment;
 import com.guc.ahmed.callingapp.fragments.DestinationFragment;
@@ -53,6 +54,7 @@ import com.guc.ahmed.callingapp.fragments.PickupFragment;
 import com.guc.ahmed.callingapp.fragments.TripHistoryFragment;
 import com.guc.ahmed.callingapp.fragments.ValidateFragment;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
+import com.guc.ahmed.callingapp.objects.Trip;
 import com.tapadoo.alerter.Alert;
 import com.tapadoo.alerter.Alerter;
 
@@ -286,15 +288,16 @@ public class MainActivity extends AppCompatActivity
                 pickupFragment.setRequestTrip(requestTrip);
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, pickupFragment, "PICKUP_FRAGMENT").commit();
-                //getSupportActionBar().setTitle("Chose Your Destination");
             } else if(currentFragment instanceof ConfirmFragment){
                 Log.v("TESTTT", "ANA confirm !!!");
                 destinationFragment = new DestinationFragment();
                 destinationFragment.setRequestTrip(requestTrip);
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, destinationFragment, "DESTINATION_FRAGMENT").commit();
-                //getSupportActionBar().setTitle("Chose Your Destination");
-            } else {
+            } else if(currentFragment instanceof EditDestinationFragment) {
+                getSupportActionBar().setTitle("Your Ride");
+                super.onBackPressed();
+            }else {
                 super.onBackPressed();
             }
         }
@@ -483,5 +486,14 @@ public class MainActivity extends AppCompatActivity
                     .replace(R.id.fragment_container, onTripFragment, "ONTRIP_FRAGMENT").commitAllowingStateLoss();
         }
     }
+
+    public void showEditDestinationFragment(Trip trip) {
+        EditDestinationFragment editDestinationFragment = new EditDestinationFragment();
+        editDestinationFragment.setTrip(trip);
+        getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_container, editDestinationFragment, "EDIT_DESTINATION_FRAGMENT").addToBackStack(null).commit();
+    }
+
+
 
 }

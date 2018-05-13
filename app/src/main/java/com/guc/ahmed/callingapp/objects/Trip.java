@@ -159,6 +159,17 @@ public class Trip {
         return trip;
     }
 
+    public static RequestTrip toRequestTrip(Trip trip){
+        RequestTrip requestTrip = new RequestTrip();
+        requestTrip.setPickupLocation(trip.getPickupLocation());
+        List<LatLng> destinations = new ArrayList<>();
+        for(TripDestination tripDestination : trip.getDestinations()){
+            destinations.add(tripDestination.getLocation());
+        }
+        requestTrip.setDestinations(destinations);
+        return requestTrip;
+    }
+
     public String getEvent() {
         return event;
     }
