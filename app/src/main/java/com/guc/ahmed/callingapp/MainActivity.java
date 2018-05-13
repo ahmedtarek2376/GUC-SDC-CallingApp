@@ -123,10 +123,20 @@ public class MainActivity extends AppCompatActivity
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
         Log.v("MainActivity", "FirebaseInstanceId Token: " + refreshedToken);
 
-        pickupFragment = new PickupFragment();
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, pickupFragment, "PICKUP_FRAGMENT").commit();
 
+        pickupFragment = new PickupFragment();
+
+        String action = getIntent().getAction();
+        if(action!=null && action.equalsIgnoreCase("ONTRIP")){
+            Bundle bundle = getIntent().getExtras();
+            String status = bundle.getString("EVENT");
+            if(status != null && status.length()>0 ){
+                showOnTripFragment(bundle);
+            }
+        }else{
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, pickupFragment, "PICKUP_FRAGMENT").commit();
+        }
         /////////////////////////w/////////////////////
         mAuth = FirebaseAuth.getInstance();
 

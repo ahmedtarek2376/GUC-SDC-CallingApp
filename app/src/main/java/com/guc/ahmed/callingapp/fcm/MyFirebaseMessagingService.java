@@ -59,9 +59,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (remoteMessage.getData().size() > 0) {
             Map<String,String> data = remoteMessage.getData();
             Intent intent = new Intent("FcmData");
-            intent.putExtra("EVENT", remoteMessage.getData().get("EVENT"));
-            intent.putExtra("TRIP_ID", remoteMessage.getData().get("TRIP_ID"));
-            intent.putExtra("CAR_ID", remoteMessage.getData().get("CAR_ID"));
+            intent.putExtra("EVENT", data.get("EVENT"));
+            intent.putExtra("TRIP_ID", data.get("TRIP_ID"));
+            intent.putExtra("CAR_ID", data.get("CAR_ID"));
             broadcaster.sendBroadcast(intent);
 
             //handleNow(remoteMessage);
@@ -70,7 +70,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // Check if message contains a notification payload.
         if (remoteMessage.getNotification() != null) {
+            Map<String,String> data = remoteMessage.getData();
             Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
+            sendNotification(remoteMessage.getNotification().getBody() , data);
             //handleNow(remoteMessage);
         }
 
@@ -98,30 +100,45 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
 
 
-//    /**
-//     * Create and show a simple notification containing the received FCM message.
-//     *
-//     * @param messageBody FCM message body received.
-//     */
-//    private void sendNotification(String messageBody) {
-//        Intent intent = new Intent(this, MainActivity.class);
-//        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-//                PendingIntent.FLAG_ONE_SHOT);
-//
-//        //String channelId = getString(R.string.default_notification_channel_id);
-//        Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-//        NotificationCompat.Builder notificationBuilder =
-//                new NotificationCompat.Builder(this)
-//                .setContentTitle("FCM Message")
-//                .setContentText(messageBody)
-//                .setAutoCancel(true)
-//                .setSound(defaultSoundUri)
-//                .setContentIntent(pendingIntent);
-//
-//        NotificationManager notificationManager =
-//                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-//
-//        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
-//    }
+    /**
+     * Create and show a simple notification containing the received FCM message.
+     *
+     * @param messageBody FCM message body received.
+     * @param data
+     */
+    private void sendNotification(String messageBody, Map<String, String> data) {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setAction("ONTRIP");
+        intent.putExtra("EVENT", data.get("EVENT"));
+        intent.putExtra("TRIP_ID", data.get("TRIP_ID"));
+        intent.putExtra("CAR_ID", data.get("CAR_ID"));
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
+                PendingIntent.FLAG_ONE_SHOT);
+
+        //String channelId = getString(R.string.default_notification_channel_id);
+        Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(this, "default")
+                .setContentTitle("GUC Self-Driving Car")
+                .setContentText(messageBody)
+                        .setSmallIcon(R.drawable.alerter_ic_notifications)
+                .setAutoCancel(true)
+                .setSound(defaultSoundUri)
+                .setContentIntent(pendingIntent);
+
+
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Since android Oreo notification channel is needed.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("default",
+                    "GUC SDC",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+    }
 }

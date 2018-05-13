@@ -5,8 +5,8 @@
     style="@style/WelcomeTheme"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background"
-    tools:context="com.guc.ahmed.callingapp.LoginActivity">
+    tools:context="com.guc.ahmed.callingapp.LoginActivity"
+    android:background="@color/colorPrimary">
 
 
     <LinearLayout
@@ -20,11 +20,11 @@
             android:layout_height="wrap_content"
             android:text="GUC SDC"
             android:textSize="36sp"
-            android:textColor="@android:color/background_light"
+            android:textColor="@color/colorAccent"
             android:textAlignment="center"
             android:paddingVertical="100dp"
             fontPath="fonts/Arkhip_font.ttf"
-            tools:ignore="MissingPrefix" />//>
+            tools:ignore="MissingPrefix" />
 
     </LinearLayout>
 
@@ -39,7 +39,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
-            android:background="#CC000000"
+            android:background="@color/colorAccent"
             android:paddingHorizontal="40dp"
             android:paddingVertical="40dp">
 
