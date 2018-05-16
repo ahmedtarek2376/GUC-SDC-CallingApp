@@ -285,6 +285,8 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
 
     public void addMarkersToMap(){
 
+        mMap.clear();
+
         for(Map.Entry<String, Marker> entry : markers.entrySet()){
             Marker marker = entry.getValue();
             marker.remove();
@@ -321,38 +323,51 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
     }
 
     private void drawTripRoute() {
-        List<LatLng> waypoints = new ArrayList<>();
-        for (TripDestination tripDestination : currentTrip.getDestinations()){
-            waypoints.add(tripDestination.getLocation());
+        LatLng fromLatLng = null;
+        LatLng toLatLng = null;
+        List<TripDestination> destinations = currentTrip.getDestinations();
+
+        if(!destinations.get(0).isArrived()){
+            fromLatLng = currentTrip.getPickupLocation();
+            toLatLng = destinations.get(0).getLocation();
+        } else if (destinations.size()>1 && !destinations.get(1).isArrived()){
+            fromLatLng = destinations.get(0).getLocation();
+            toLatLng = destinations.get(1).getLocation();
+        } else if (destinations.size()>2 && !destinations.get(2).isArrived()){
+            fromLatLng = destinations.get(1).getLocation();
+            toLatLng = destinations.get(2).getLocation();
         }
-        GoogleDirection.withServerKey(getResources().getString(R.string.google_maps_key))
-                .from(currentTrip.getPickupLocation())
-                .and(waypoints)
-                .to(waypoints.get(waypoints.size()-1))
-                .transportMode(TransportMode.DRIVING)
-                .execute(new DirectionCallback() {
-                    @Override
-                    public void onDirectionSuccess(Direction direction, String rawBody) {
-                        if(getContext()==null){
-                            return;
-                        }
-                        if(direction.isOK()) {
-                            Route route = direction.getRouteList().get(0);
-                            for (Leg leg : route.getLegList()) {
-                                ArrayList<LatLng> directionPositionList = leg.getDirectionPoint();
-                                PolylineOptions polylineOptions = DirectionConverter.createPolyline(getActivity(), directionPositionList, 3, Color.GRAY);
-                                mMap.addPolyline(polylineOptions);
+
+        if(fromLatLng !=null && toLatLng!=null) {
+            GoogleDirection.withServerKey(getResources().getString(R.string.google_maps_key))
+                    .from(fromLatLng)
+//                .and(waypoints)
+                    .to(toLatLng)
+                    .transportMode(TransportMode.DRIVING)
+                    .execute(new DirectionCallback() {
+                        @Override
+                        public void onDirectionSuccess(Direction direction, String rawBody) {
+                            if (getContext() == null) {
+                                return;
                             }
-                        } else {
+                            if (direction.isOK()) {
+                                Route route = direction.getRouteList().get(0);
+                                for (Leg leg : route.getLegList()) {
+                                    ArrayList<LatLng> directionPositionList = leg.getDirectionPoint();
+                                    PolylineOptions polylineOptions = DirectionConverter.createPolyline(getActivity(), directionPositionList, 3, Color.GRAY);
+                                    mMap.addPolyline(polylineOptions);
+                                }
+                            } else {
+                                // Do something
+                            }
+                        }
+
+                        @Override
+                        public void onDirectionFailure(Throwable t) {
                             // Do something
                         }
-                    }
-
-                    @Override
-                    public void onDirectionFailure(Throwable t) {
-                        // Do something
-                    }
-                });
+                    });
+        }
 
     }
 
@@ -378,7 +393,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
             event = currentTrip.getEvents().get(currentTrip.getEvents().size()-2);
         }
 
-        if(event.equalsIgnoreCase(TripEvent.END.name()) || currentTrip.getEndTime()!=null ){
+        if(event.equalsIgnoreCase(TripEvent.END.name()) || currentTrip.getEndTime()!=null){
             timeElapsed.stop();
             status = "Ride Ended";
             edit.setVisibility(View.GONE);
@@ -402,10 +417,13 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
             buttonEnd.setVisibility(View.VISIBLE);
             buttonStart.setVisibility(View.GONE);
             buttonContinue.setVisibility(View.VISIBLE);
+            buttonContinue.setProgress(0);
         }else if(event.equalsIgnoreCase(TripEvent.ARRIVE_FINAL.name())){
+            edit.setVisibility(View.GONE);
             status = "Arrived Last Destination";
             buttonCancel.setVisibility(View.GONE);
             buttonEnd.setVisibility(View.VISIBLE);
+            buttonEnd.setProgress(0);
             buttonStart.setVisibility(View.GONE);
             buttonContinue.setVisibility(View.GONE);
         }else if(event.equalsIgnoreCase(TripEvent.START.name()) || event.equalsIgnoreCase(TripEvent.CONTINUE.name()) || event.equalsIgnoreCase(TripEvent.CHANGE_DESTINATION.name())){
@@ -592,7 +610,10 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
                     .title("CAR").icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())));
 //            mMap.moveCamera(CameraUpdateFactory.newLatLng(retrievedCar.getLatLng()));
         } else {
-//            mMap.moveCamera(CameraUpdateFactory.newLatLng(retrievedCar.getLatLng()));
+//            Marker newMarker = carMarker;
+            carMarker.remove();
+            carMarker = mMap.addMarker(new MarkerOptions().position(carMarker.getPosition())
+                    .title("CAR").icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())));
             if(!retrievedCar.getLatLng().equals(carMarker.getPosition())){
                 animateMarker(carMarker, retrievedCar.getLatLng(), false);
             }

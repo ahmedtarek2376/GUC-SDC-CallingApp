@@ -280,7 +280,9 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(getContext(),"Error, please try again.", Toast.LENGTH_LONG).show();
+                        button.setProgress(0);
+                        if(getContext()!=null)
+                            Toast.makeText(getContext(),"Network error, please try again.", Toast.LENGTH_LONG).show();
                     }
                 });
 
@@ -318,10 +320,9 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        if(getContext()==null){
-                            return;
-                        }
-                        Toast.makeText(getContext(),"Error, please try again.", Toast.LENGTH_LONG).show();
+                        button.setProgress(0);
+                        if(getContext()!=null)
+                            Toast.makeText(getContext(),"Network error, please try again.", Toast.LENGTH_LONG).show();
                     }
                 });
 
@@ -364,10 +365,9 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        if(getContext()==null){
-                            return;
-                        }
-                        Toast.makeText(getContext(),"Error, please try again.", Toast.LENGTH_LONG).show();
+                        button.setProgress(0);
+                        if(getContext()!=null)
+                            Toast.makeText(getContext(),"Network error, please try again.", Toast.LENGTH_LONG).show();
                     }
                 });
 
