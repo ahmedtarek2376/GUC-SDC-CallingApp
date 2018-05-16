@@ -442,12 +442,14 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
         mMap.setBuildingsEnabled(false);
         mMap.getUiSettings().setMapToolbarEnabled(false);
 
-
-
         mMap.setPadding(0,250,0,250);
 
         boolean success = googleMap.setMapStyle(new MapStyleOptions(getResources()
                 .getString(R.string.style_json)));
+
+        if (!success) {
+            Log.e("PickupFragment", "Style parsing failed.");
+        }
         // Constrain the camera target to the GUC bounds.
         mMap.setLatLngBoundsForCameraTarget(GucPoints.GUC);
 
@@ -655,28 +657,28 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
 
         switch (v.getId()) {
 
-            case R.id.on_trip_start:
-                submitTripEventUrl = getResources().getString(R.string.url_trip_start) + mGmail;
-                mEvent = "START";
-                AlertDialog startDialog = new AlertDialog.Builder(getContext()).create();
-                startDialog.setTitle("Confirm Start");
-                startDialog.setMessage("Car will start moving. Are you sure you want to start your ride ?");
-                startDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        button.setProgress(1);
-                        submitTripEvent();
-                    }
-                });
-                startDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-                startDialog.show();
-
-                break;
+//            case R.id.on_trip_start:
+//                submitTripEventUrl = getResources().getString(R.string.url_trip_start) + mGmail;
+//                mEvent = "START";
+//                AlertDialog startDialog = new AlertDialog.Builder(getContext()).create();
+//                startDialog.setTitle("Confirm Start");
+//                startDialog.setMessage("Car will start moving. Are you sure you want to start your ride ?");
+//                startDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        button.setProgress(1);
+//                        submitTripEvent();
+//                    }
+//                });
+//                startDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.dismiss();
+//                    }
+//                });
+//                startDialog.show();
+//
+//                break;
 
             case R.id.on_trip_continue:
                 submitTripEventUrl = getResources().getString(R.string.url_trip_continue) + mGmail;

@@ -81,7 +81,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/action/ic_history_black_24dp.xml" />
+                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/device/ic_signal_wifi_off_black_24dp.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -91,11 +91,8 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="height" value="100" />
-                            <entry key="outputName" value="ic_history_black_100dp" />
-                            <entry key="overrideSize" value="true" />
+                            <entry key="outputName" value="ic_signal_wifi_off_black_24dp" />
                             <entry key="sourceFile" value="A:\GUC\Bachelor\Android\CallingApp\app\src\main\res\drawable\multiple_location.svg" />
-                            <entry key="width" value="100" />
                           </map>
                         </option>
                       </PersistentState>

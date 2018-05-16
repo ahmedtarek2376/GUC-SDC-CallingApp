@@ -25,6 +25,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -56,6 +57,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -234,7 +236,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
             button.setProgress(0);
 
             return false;
-        }else if(!GucPoints.GUC.contains(lastLocation)) {
+        }else if(GucPoints.GUC.contains(lastLocation)) {
             ////////////////////This has to be changed to NOT////////////////////////////////
             Alerter.clearCurrent(getActivity());
             alert = Alerter.create(getActivity())
@@ -482,13 +484,21 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.clear();
+
+        mMap.getUiSettings().setTiltGesturesEnabled(true);
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        mMap.getUiSettings().setAllGesturesEnabled(false);
+        mMap.setMinZoomPreference(16.0f);
         mMap.setBuildingsEnabled(false);
         mMap.getUiSettings().setMapToolbarEnabled(false);
-        mMap.getUiSettings().setScrollGesturesEnabled(true);
 
         mMap.setLatLngBoundsForCameraTarget(GucPoints.GUC);
+
+        boolean success = googleMap.setMapStyle(new MapStyleOptions(getResources()
+                .getString(R.string.style_json)));
+
+        if (!success) {
+            Log.e("PickupFragment", "Style parsing failed.");
+        }
 
         addMarkersToMap();
 
@@ -519,14 +529,14 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void drawTripRoute() {
-        List<LatLng> waypoints = new ArrayList<>();
-        for (LatLng latLng : requestTrip.getDestinations()){
-            waypoints.add(latLng);
-        }
+//        List<LatLng> waypoints = new ArrayList<>();
+//        for (LatLng latLng : requestTrip.getDestinations()){
+//            waypoints.add(latLng);
+//        }
         GoogleDirection.withServerKey(getResources().getString(R.string.google_maps_key))
                 .from(requestTrip.getPickupLocation())
-                .and(waypoints)
-                .to(waypoints.get(waypoints.size()-1))
+//                .and(waypoints)
+                .to(requestTrip.getDestinations().get(0))
                 .transportMode(TransportMode.DRIVING)
                 .execute(new DirectionCallback() {
                     @Override
@@ -559,7 +569,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
 
         //pickup marker
         customMarker.setImage(R.drawable.custom_marker_start);
-        //customMarker.setText(GucPoints.getGucPlaceByLatLng(requestTrip.getPickupLocation()).getName());
+        customMarker.setText("Pickup");
         markers.put( GucPoints.getGucPlaceByLatLng(requestTrip.getPickupLocation()).getName(),
                 mMap.addMarker(new MarkerOptions().position(GucPoints.getGucPlaceByLatLng(requestTrip.getPickupLocation()).getLatLng())
                         .title(GucPoints.getGucPlaceByLatLng(requestTrip.getPickupLocation()).getName()).icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())))
@@ -572,7 +582,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
         }
         customMarker.setImage(R.drawable.custom_marker_end);
         for(GucPlace place : destinationArray){
-            //customMarker.setText(place.getName());
+            customMarker.setText(place.getName());
             markers.put( place.getName(),
                     mMap.addMarker(new MarkerOptions().position(place.getLatLng())
                             .title(place.getName()).icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())))

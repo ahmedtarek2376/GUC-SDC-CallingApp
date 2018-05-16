@@ -340,12 +340,13 @@
                         android:id="@+id/on_trip_start"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Start Ride"
-                        android:textSize="16sp"
+                        android:text="Please Start Ride From Car's Tablet"
+                        android:textSize="14sp"
                         android:textColor="@color/colorPrimary"
-                        custom:pb_colorNormal="@android:color/holo_green_dark"
-                        custom:pb_colorPressed="@android:color/holo_green_light"
+                        custom:pb_colorNormal="@color/main_disabled_color"
+                        custom:pb_colorPressed="@color/main_disabled_color"
                         android:visibility="gone"
+                        android:enabled="false"
                         android:layout_marginTop="10dp"/>
 
                     <com.dd.processbutton.iml.ActionProcessButton

@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity
     private RequestTrip requestTrip;
     private ConfirmFragment confirmFragment;
     private PickupFragment pickupFragment;
-    private Alert alert;
+    private Alert alertInternet;
 
     private Gson gson;
     public static ArrayList<GucPlace> gucPlaces;
@@ -215,34 +215,18 @@ public class MainActivity extends AppCompatActivity
         LocalBroadcastManager.getInstance(this).registerReceiver((mMessageReceiver),
                 new IntentFilter("FcmData")
         );
+        this.registerReceiver((internetReceiver),
+                new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+        );
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         checkPlayServices();
-        if(!isNetworkStatusAvialable(getApplicationContext())) {
-            Alerter.clearCurrent(this);
-            alert = Alerter.create(this)
-                    .setTitle("No Internet Connection !!")
-                    .setText("Please enable internet connection to proceed. Click to dismiss when internet connection is available.")
-                    .enableIconPulse(true)
-                    .disableOutsideTouch()
-                    .setBackgroundColorRes(R.color.red_error)
-                    .enableInfiniteDuration(true)
-                    .setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            if(isNetworkStatusAvialable(getApplicationContext())){
-                                alert.hide();
-                                Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-                                getSupportFragmentManager().beginTransaction().detach(currentFragment).attach(currentFragment).commit();
-                            }
-                        }
-                    })
-                    .show();
+        if(!isNetworkStatusAvailable(getApplicationContext())) {
+            showNoInternetConncetion();
         }
-
     }
 
     @Override
@@ -253,14 +237,14 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public static boolean isNetworkStatusAvialable (Context context) {
+    public static boolean isNetworkStatusAvailable (Context context) {
         ConnectivityManager cm =
                 (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
 
         return activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
+                activeNetwork.isConnected();
     }
 
     //update UI on sign out
@@ -451,6 +435,38 @@ public class MainActivity extends AppCompatActivity
             }
         }
     };
+
+    private BroadcastReceiver internetReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            if(! isNetworkStatusAvailable(context)){
+                showNoInternetConncetion();
+            }else {
+                removeNoInternetConnection();
+            }
+        }
+    };
+
+    private void removeNoInternetConnection() {
+        if(alertInternet!=null){
+            alertInternet.hide();
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+            getSupportFragmentManager().beginTransaction().detach(currentFragment).attach(currentFragment).commitAllowingStateLoss();
+        }
+    }
+
+    private void showNoInternetConncetion() {
+        Alerter.clearCurrent(this);
+        alertInternet = Alerter.create(this)
+                .setTitle("No Internet Connection !!")
+                .setText("The application needs Internet connection to function. This alert will automatically disappear when you are connected to the Internet.")
+                .enableIconPulse(true)
+                .disableOutsideTouch()
+                .setIcon(R.drawable.ic_signal_wifi_off_black_24dp)
+                .setBackgroundColorRes(R.color.red_error)
+                .enableInfiniteDuration(true)
+                .show();
+    }
 
     public void showOnTripFragment(Bundle bundle) {
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
