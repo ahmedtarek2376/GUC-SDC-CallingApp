@@ -8,6 +8,16 @@
     tools:context="com.guc.ahmed.callingapp.LoginActivity"
     android:background="@color/colorPrimary">
 
+    <ProgressBar
+        android:id="@+id/progressBarLogin"
+        style="@android:style/Widget.Holo.ProgressBar.Horizontal"
+        android:indeterminate="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:progress="40"
+        android:indeterminateBehavior="cycle"
+        android:indeterminateTint="@color/colorAccent"
+        android:visibility="gone"/>
 
     <LinearLayout
         android:layout_width="match_parent"

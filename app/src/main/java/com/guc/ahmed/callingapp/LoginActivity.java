@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
@@ -35,7 +36,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
     private static final int RC_SIGN_IN = 1;
     private GoogleApiClient mGoogleApiClient;
-    private ProgressDialog progressDialog ;
+    private ProgressBar progressBar;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
 
@@ -55,22 +56,13 @@ public class LoginActivity extends AppCompatActivity {
                 .build()
         );
 
-        progressDialog = new ProgressDialog(this, R.style.MyAlertDialogStyle) ;
-        progressDialog.setCancelable ( false ) ;
-        progressDialog.setMessage ( "Loading..." ) ;
-        progressDialog.setTitle ( "Please wait" ) ;
-        progressDialog.setIndeterminate ( true ) ;
+        progressBar = findViewById(R.id.progressBarLogin);
 
         mAuth = FirebaseAuth.getInstance();
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 if(firebaseAuth.getCurrentUser() != null){
-//                    //save loggedin in shared preferences
-//                    SharedPreferences sharedPref = LoginActivity.this.getPreferences(Context.MODE_PRIVATE);
-//                    SharedPreferences.Editor editor = sharedPref.edit();
-//                    editor.putBoolean("com.guc.ahmed.callingapp.LOGGED_IN", true);
-//                    editor.apply();
                     updateUI(firebaseAuth.getCurrentUser());
                 }
             }
@@ -97,7 +89,7 @@ public class LoginActivity extends AppCompatActivity {
         mGoogleBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                progressDialog.show();
+                progressBar.setVisibility(View.VISIBLE);
                 signIn();
             }
         });
@@ -107,11 +99,6 @@ public class LoginActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         mAuth.addAuthStateListener(mAuthStateListener);
-//        SharedPreferences sharedPref = LoginActivity.this.getPreferences(Context.MODE_PRIVATE);
-//        boolean loggedIn = sharedPref.getBoolean( "com.guc.ahmed.callingapp.LOGGED_IN", false);
-//        if(loggedIn){
-//            updateUI(mAuth.getCurrentUser());
-//        }
     }
 
     private void signIn() {
@@ -133,7 +120,8 @@ public class LoginActivity extends AppCompatActivity {
             } catch (ApiException e) {
                 // Google Sign In failed, update UI appropriately
                 Log.w(TAG, "Google sign in failed", e);
-                // ...
+                Toast.makeText(getApplicationContext(),"Google sign in failed", Toast.LENGTH_LONG).show();
+                progressBar.setVisibility(View.GONE);
             }
         }
     }
@@ -150,13 +138,12 @@ public class LoginActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-//                            updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
                             Toast.makeText(LoginActivity.this, "Authentication Failed", Toast.LENGTH_LONG).show();
-//                            updateUI(null);
-                        }
+                            progressBar.setVisibility(View.GONE);
+                            }
 
                         // ...
                     }
@@ -167,7 +154,7 @@ public class LoginActivity extends AppCompatActivity {
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        progressDialog.dismiss();
+        progressBar.setVisibility(View.GONE);
         startActivity(intent);
     }
 
