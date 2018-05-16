@@ -1,7 +1,6 @@
 package com.guc.ahmed.callingapp.fragments;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -61,7 +60,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.guc.ahmed.callingapp.MainActivity;
 import com.guc.ahmed.callingapp.R;
-import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
+import com.guc.ahmed.callingapp.MyVolleySingleton;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
 import com.guc.ahmed.callingapp.objects.Car;
 import com.guc.ahmed.callingapp.gucpoints.GucPoints;
@@ -73,7 +72,6 @@ import com.guc.ahmed.callingapp.objects.TripEvent;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -125,6 +123,8 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
 
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationRequest locationRequest;
+
+    private static final String TAG = "ONTRIPFRAGMENT";
 
 
     public OnTripFragment() {
@@ -215,6 +215,15 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
         }
 
     }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (MyVolleySingleton.getInstance(getActivity()).getRequestQueue() != null) {
+            MyVolleySingleton.getInstance(getActivity()).getRequestQueue().cancelAll(TAG);
+        }
+    }
+
     public void resumeCarsUpdates() {
         if(carhandler!=null && updateCarLocation!=null && mMap!=null){
             carhandler.post(updateCarLocation);
@@ -245,14 +254,12 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
             mEvent = bundle.getString("EVENT");
         }
         String url = getResources().getString(R.string.url_get_trip_details) + mTripID;
-        Log.v("CarDetails", url);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
                 (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.v("CarDetails", "It worked");
                         currentTrip = gson.fromJson(response.toString(), Trip.class);
                         edit.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -268,10 +275,11 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.v("CarDetails", "It didnt work");
+
                     }
                 });
 
+        jsonObjectRequest.setTag(TAG);
         MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
     }
 
@@ -544,14 +552,12 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
                 public void run() {
 
                     String url = getResources().getString(R.string.url_get_car_details) + currentTrip.getCarID();
-                    Log.v("CarDetails", url);
 
                     JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
                             (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
 
                                 @Override
                                 public void onResponse(JSONObject response) {
-                                    Log.v("CarDetails", "It worked");
                                     retrievedCar = gson.fromJson(response.toString(), Car.class);
                                     animateCar();
                                 }
@@ -559,12 +565,11 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
 
                                 @Override
                                 public void onErrorResponse(VolleyError error) {
-                                    Activity activity = getActivity();
-                                    if (activity != null && isAdded())
-                                        Log.v("CarDetails", "It didnt work");
+
                                 }
                             });
 
+                    jsonObjectRequest.setTag(TAG);
                     MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
 
                     carhandler.postDelayed(updateCarLocation, 3000);
@@ -770,42 +775,9 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
                     }
                 });
 
+        jsonObjectRequest.setTag(TAG);
         // Access the RequestQueue through your singleton class.
         MyVolleySingleton.getInstance(getContext()).addToRequestQueue(jsonObjectRequest);
-    }
-
-    private void updateOfflineUI() {
-        Log.v("ONTRIP", "I reacher update offline");
-        String status = "Unknown";
-        if(mEvent.equalsIgnoreCase("START")){
-            status = "Moving in Car";
-            buttonCancel.setVisibility(View.VISIBLE);
-            buttonEnd.setVisibility(View.GONE);
-            buttonStart.setVisibility(View.GONE);
-            buttonContinue.setVisibility(View.GONE);
-        }else if(mEvent.equalsIgnoreCase("CONTINUE")){
-            status = "Moving in Car";
-            buttonCancel.setVisibility(View.VISIBLE);
-            buttonEnd.setVisibility(View.GONE);
-            buttonStart.setVisibility(View.GONE);
-            buttonContinue.setVisibility(View.GONE);
-
-        }else if(mEvent.equalsIgnoreCase("CANCEL")){
-            status = "Trip Canceled";
-            buttonCancel.setVisibility(View.GONE);
-            buttonEnd.setVisibility(View.GONE);
-            buttonStart.setVisibility(View.GONE);
-            buttonContinue.setVisibility(View.GONE);
-
-        }else if(mEvent.equalsIgnoreCase("END")){
-            status = "Trip Ended";
-            buttonCancel.setVisibility(View.GONE);
-            buttonEnd.setVisibility(View.GONE);
-            buttonStart.setVisibility(View.GONE);
-            buttonContinue.setVisibility(View.GONE);
-
-        }
-        statusTxt.setText(status);
     }
 
     @Override

@@ -56,11 +56,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.guc.ahmed.callingapp.MainActivity;
 import com.guc.ahmed.callingapp.R;
-import com.guc.ahmed.callingapp.adapter.EditItemTouchHelperCallback;
 import com.guc.ahmed.callingapp.adapter.ItemTouchHelperAdapter;
 import com.guc.ahmed.callingapp.adapter.ItemTouchHelperCallback;
 import com.guc.ahmed.callingapp.adapter.OnStartDragListener;
-import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
+import com.guc.ahmed.callingapp.MyVolleySingleton;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
 import com.guc.ahmed.callingapp.gucpoints.GucPoints;
 import com.guc.ahmed.callingapp.map.CustomMarker;
@@ -104,6 +103,8 @@ public class EditDestinationFragment extends Fragment
     private LinearLayout recyclerLayout;
     private Alert alert;
     private Gson gson;
+
+    private static final String TAG = "EDITDESTINATIONFRAGMENT";
 
     public EditDestinationFragment() {
         // Required empty public constructor
@@ -210,6 +211,9 @@ public class EditDestinationFragment extends Fragment
     public void onStop() {
         super.onStop();
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+        if (MyVolleySingleton.getInstance(getActivity()).getRequestQueue() != null) {
+            MyVolleySingleton.getInstance(getActivity()).getRequestQueue().cancelAll(TAG);
+        }
     }
 
     public void setRequestTrip(Trip trip){

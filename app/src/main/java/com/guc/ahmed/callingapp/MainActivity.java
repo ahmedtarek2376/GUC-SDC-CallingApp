@@ -4,8 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -20,7 +18,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -45,16 +42,15 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
-import com.guc.ahmed.callingapp.fragments.EditDestinationFragment;
-import com.guc.ahmed.callingapp.objects.RequestTrip;
 import com.guc.ahmed.callingapp.fragments.ConfirmFragment;
 import com.guc.ahmed.callingapp.fragments.DestinationFragment;
+import com.guc.ahmed.callingapp.fragments.EditDestinationFragment;
 import com.guc.ahmed.callingapp.fragments.OnTripFragment;
 import com.guc.ahmed.callingapp.fragments.PickupFragment;
 import com.guc.ahmed.callingapp.fragments.TripHistoryFragment;
 import com.guc.ahmed.callingapp.fragments.ValidateFragment;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
+import com.guc.ahmed.callingapp.objects.RequestTrip;
 import com.guc.ahmed.callingapp.objects.Trip;
 import com.tapadoo.alerter.Alert;
 import com.tapadoo.alerter.Alerter;
@@ -71,24 +67,19 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, PickupFragment.OnPickupLocationListener, DestinationFragment.OnDestinationLocationListener {
 
-    private NavigationView navigationView;
-    private Toolbar toolbar;
     private  FirebaseAuth.AuthStateListener mAuthStateListener;
     public static FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
 
     private RequestTrip requestTrip;
-    private static boolean accountVerified;
-    private SharedPreferences sharedPref;
-    private SharedPreferences.Editor editor;
     private ConfirmFragment confirmFragment;
     private PickupFragment pickupFragment;
     private Alert alert;
 
-    private TextView navName;
-    private TextView navEmail;
     private Gson gson;
     public static ArrayList<GucPlace> gucPlaces;
+
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -108,25 +99,16 @@ public class MainActivity extends AppCompatActivity
                 .build()
         );
 
-        sharedPref = getPreferences(Context.MODE_PRIVATE);
-        editor = sharedPref.edit();
-        accountVerified = sharedPref.getBoolean("AccountVerified", false);
-
-        Log.v("Account Verified = " ,accountVerified + "");
-
         requestTrip = new RequestTrip();
         gucPlaces = new ArrayList<>();
         getGucPlaces();
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         checkPlayServices();
 
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
-        Log.v("MainActivity", "FirebaseInstanceId Token: " + refreshedToken);
-
-
         pickupFragment = new PickupFragment();
 
         String action = getIntent().getAction();
@@ -169,19 +151,19 @@ public class MainActivity extends AppCompatActivity
         /////////////////////////////////////////////
 
         /////////////////////////////////////////////
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         View headerView = navigationView.getHeaderView(0);
-        navName =  headerView.findViewById(R.id.nav_name);
+        TextView navName = headerView.findViewById(R.id.nav_name);
         navName.setText(mAuth.getCurrentUser().getDisplayName());
-        navEmail = headerView.findViewById(R.id.nav_email);
+        TextView navEmail = headerView.findViewById(R.id.nav_email);
         navEmail.setText(mAuth.getCurrentUser().getEmail());
 
         GsonBuilder gsonBuilder = new GsonBuilder();
@@ -222,14 +204,13 @@ public class MainActivity extends AppCompatActivity
             }
         };
 
-        // Access the RequestQueue through your singleton class.
+        jsonArrayRequest.setTag(TAG);
         MyVolleySingleton.getInstance(this).addToRequestQueue(jsonArrayRequest);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        accountVerified = true;
         mAuth.addAuthStateListener(mAuthStateListener);
         LocalBroadcastManager.getInstance(this).registerReceiver((mMessageReceiver),
                 new IntentFilter("FcmData")
@@ -264,15 +245,22 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (MyVolleySingleton.getInstance(this).getRequestQueue() != null) {
+            MyVolleySingleton.getInstance(this).getRequestQueue().cancelAll(TAG);
+        }
+    }
+
     public static boolean isNetworkStatusAvialable (Context context) {
         ConnectivityManager cm =
                 (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        boolean isConnected = activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
 
-        return isConnected;
+        return activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
     }
 
     //update UI on sign out
@@ -287,22 +275,19 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
             if(currentFragment instanceof PickupFragment){
-                Log.v("TESTTT", "ANA pickup !!!");
                 finish();
             } else if(currentFragment instanceof DestinationFragment){
-                Log.v("TESTTT", "ANA destination !!!");
                 pickupFragment = new PickupFragment();
                 pickupFragment.setRequestTrip(requestTrip);
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, pickupFragment, "PICKUP_FRAGMENT").commit();
             } else if(currentFragment instanceof ConfirmFragment){
-                Log.v("TESTTT", "ANA confirm !!!");
                 destinationFragment = new DestinationFragment();
                 destinationFragment.setRequestTrip(requestTrip);
                 getSupportFragmentManager().beginTransaction()
@@ -325,11 +310,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -361,7 +341,7 @@ public class MainActivity extends AppCompatActivity
                     .replace(R.id.fragment_container, pickupFragment, "PICKUP_FRAGMENT").commit();
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return false;
     }
@@ -411,9 +391,10 @@ public class MainActivity extends AppCompatActivity
                         if(getApplicationContext()==null){
                             return;
                         }
-                        Toast.makeText(getApplicationContext(),"Error, please try again.", Toast.LENGTH_LONG);
+                        Toast.makeText(getApplicationContext(),"Error, please try again.", Toast.LENGTH_LONG).show();
                     }
                 });
+        freeRequest.setTag(TAG);
         MyVolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(freeRequest);
 
     }
@@ -458,21 +439,6 @@ public class MainActivity extends AppCompatActivity
         confirmFragment.setRequestTrip(requestTrip);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, confirmFragment, "CONFIRM_FRAGMENT").commit();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        editor.putBoolean("AccountVerified", accountVerified);
-        editor.commit();
-        // Always call the superclass so it can save the view hierarchy state
-        super.onSaveInstanceState(savedInstanceState);
-    }
-
-    @Override
-    protected void onDestroy() {
-        editor.putBoolean("AccountVerified", accountVerified);
-        editor.commit();
-        super.onDestroy();
     }
 
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {

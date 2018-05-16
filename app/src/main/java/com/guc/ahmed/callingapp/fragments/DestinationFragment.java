@@ -109,8 +109,6 @@ public class DestinationFragment extends Fragment
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_destination, container, false);
-        Log.v("DESTINATION", "onCreateView");
-
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
@@ -202,9 +200,6 @@ public class DestinationFragment extends Fragment
         params.gravity = Gravity.TOP;
         view.setLayoutParams(params);
         snackbar.show();
-
-
-        Log.v("DESTINATION", "onResume");
     }
 
     @Override
@@ -212,14 +207,12 @@ public class DestinationFragment extends Fragment
         super.onPause();
         Alerter.clearCurrent(getActivity());
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-        Log.v("DESTINATION", "onPause");
     }
 
     @Override
     public void onStop() {
         super.onStop();
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-        Log.v("DESTINATION", "onStop");
     }
 
     public void setRequestTrip(RequestTrip trip){
@@ -239,7 +232,6 @@ public class DestinationFragment extends Fragment
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        Log.v("DESTINATION", "onMapCreated");
         mMap = googleMap;
 
         mMap.clear();
@@ -480,8 +472,6 @@ public class DestinationFragment extends Fragment
                 parent.setVisibility(View.VISIBLE);
             }
 
-            Log.v("ADAPTER" , "onCreateViewHolder");
-
            return new MyAdapter.ViewHolder(v);
         }
 
@@ -513,7 +503,6 @@ public class DestinationFragment extends Fragment
                 destinationTxt.setVisibility(View.GONE);
             }
 
-            Log.v("ADAPTER" , "onBindViewHolder");
         }
 
         @Override
@@ -525,7 +514,6 @@ public class DestinationFragment extends Fragment
         public void onAttachedToRecyclerView(RecyclerView recyclerView) {
             super.onAttachedToRecyclerView(recyclerView);
             mRecyclerView = recyclerView;
-            Log.v("ADAPTER" , "onAttachedToRecyclerView");
         }
 
         @Override
@@ -566,7 +554,6 @@ public class DestinationFragment extends Fragment
 
                 handleView = (ImageView) itemView.findViewById(R.id.handle);
 
-                Log.v("ADAPTER" , "ViewHolder");
             }
 
             @Override

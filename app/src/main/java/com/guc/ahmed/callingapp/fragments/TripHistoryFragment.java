@@ -7,14 +7,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.akexorcist.googledirection.model.Line;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -24,7 +23,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.guc.ahmed.callingapp.MainActivity;
 import com.guc.ahmed.callingapp.R;
-import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
+import com.guc.ahmed.callingapp.MyVolleySingleton;
 import com.guc.ahmed.callingapp.objects.Profile;
 import com.guc.ahmed.callingapp.objects.RequestTrip;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
@@ -49,6 +48,7 @@ public class TripHistoryFragment extends Fragment {
     private String gmail;
     private Profile profile;
     private Gson gson;
+    private static final String TAG = "TRIPHISTORYFRAGMENT";
 
     public TripHistoryFragment() {
         // Required empty public constructor
@@ -84,14 +84,12 @@ public class TripHistoryFragment extends Fragment {
     private Profile getProfile(String gmail) {
         getActivity().setProgressBarIndeterminateVisibility(true);
         String url = getResources().getString(R.string.url_get_profile) + gmail;
-        Log.v("TripHistory", url);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
                 (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.v("TripHistory", "It worked");
                         profile = gson.fromJson(response.toString(), Profile.class);
                         tripHistory = getTripHistory();
                         if(tripHistory.size()>0){
@@ -110,14 +108,25 @@ public class TripHistoryFragment extends Fragment {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.v("TripHistory", "It didnt work");
-                    }
+                        getActivity().setProgressBarIndeterminateVisibility(false);
+                        noHistory.setVisibility(View.VISIBLE);
+                        mRecyclerView.setVisibility(View.GONE);                    }
                 });
 
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(2500,2,1) );
+        jsonObjectRequest.setTag(TAG);
 // Access the RequestQueue through your singleton class.
         MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
 
         return null;
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (MyVolleySingleton.getInstance(getActivity()).getRequestQueue() != null) {
+            MyVolleySingleton.getInstance(getActivity()).getRequestQueue().cancelAll(TAG);
+        }
     }
 
     private List<RequestTrip> getTripHistory() {

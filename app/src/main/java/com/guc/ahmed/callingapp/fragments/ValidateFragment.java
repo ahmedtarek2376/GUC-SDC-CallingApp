@@ -1,19 +1,14 @@
 package com.guc.ahmed.callingapp.fragments;
 
 
-import android.app.Activity;
-import android.app.ProgressDialog;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -21,39 +16,39 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.dd.processbutton.ProcessButton;
 import com.dd.processbutton.iml.ActionProcessButton;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.guc.ahmed.callingapp.MainActivity;
-import com.guc.ahmed.callingapp.apiclasses.ApiCall;
 import com.guc.ahmed.callingapp.R;
-import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
-import com.guc.ahmed.callingapp.objects.Car;
+import com.guc.ahmed.callingapp.MyVolleySingleton;
 import com.guc.ahmed.callingapp.objects.Profile;
-import com.guc.ahmed.callingapp.objects.Trip;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.IOException;
-import java.lang.ref.WeakReference;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class ValidateFragment extends Fragment {
-    EditText gucMail;
-    ActionProcessButton verify_btn;
+    private EditText gucMail;
+    private ActionProcessButton verify_btn;
     private View view;
-    Bundle bundle;
     private Gson gson;
+    private static final String TAG = "ValidateFragment";
 
     public ValidateFragment() {
 
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (MyVolleySingleton.getInstance(getActivity()).getRequestQueue() != null) {
+            MyVolleySingleton.getInstance(getActivity()).getRequestQueue().cancelAll(TAG);
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -63,7 +58,7 @@ public class ValidateFragment extends Fragment {
 
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Verify Account");
 
-        gucMail = (EditText) view.findViewById(R.id.guc_mail_edit_text);
+        gucMail = view.findViewById(R.id.guc_mail_edit_text);
 
         GsonBuilder gsonBuilder = new GsonBuilder();
         gson = gsonBuilder.create();
@@ -114,6 +109,7 @@ public class ValidateFragment extends Fragment {
                             }
                         });
 
+                jsonObjectRequest.setTag(TAG);
                 MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
 
                 Snackbar.make(getView(), "Sending verification mail...", Snackbar.LENGTH_LONG).show();

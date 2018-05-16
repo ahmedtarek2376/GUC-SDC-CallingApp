@@ -3,7 +3,6 @@ package com.guc.ahmed.callingapp.fragments;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -26,7 +25,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,7 +45,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.dd.processbutton.iml.ActionProcessButton;
-import com.gitonway.lee.niftymodaldialogeffects.lib.NiftyDialogBuilder;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -59,23 +56,20 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolygonOptions;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.guc.ahmed.callingapp.MainActivity;
 import com.guc.ahmed.callingapp.R;
-import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
-import com.guc.ahmed.callingapp.objects.Profile;
-import com.guc.ahmed.callingapp.objects.RequestTrip;
+import com.guc.ahmed.callingapp.MyVolleySingleton;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
 import com.guc.ahmed.callingapp.gucpoints.GucPoints;
 import com.guc.ahmed.callingapp.map.CustomMarker;
+import com.guc.ahmed.callingapp.objects.Profile;
+import com.guc.ahmed.callingapp.objects.RequestTrip;
 import com.guc.ahmed.callingapp.objects.Trip;
 import com.tapadoo.alerter.Alert;
 import com.tapadoo.alerter.Alerter;
@@ -96,9 +90,6 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
     private LocationRequest locationRequest;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private HashMap<String,Marker> markers;
-    private NiftyDialogBuilder dialogBuilder;
-    private ProgressDialog progressDialog;
-    private List<Polyline> polylines;
     private ActionProcessButton button;
     private AppCompatActivity activity;
     private ActionBar actionBar;
@@ -115,6 +106,8 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
     private Gson gson;
     private Alert alert;
 
+    private static final String TAG = "ConfirmFragment";
+
     public ConfirmFragment() {
         // Required empty public constructor
     }
@@ -127,8 +120,6 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
         view =  inflater.inflate(R.layout.fragment_confirm, container, false);
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
-
-        dialogBuilder=NiftyDialogBuilder.getInstance(getContext());
 
         button = (ActionProcessButton) view.findViewById(R.id.request_trip_btn);
         button.setMode(ActionProcessButton.Mode.ENDLESS);
@@ -155,7 +146,6 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
         mapFragment.getMapAsync(this);
 
         markers = new HashMap<>();
-        polylines = new ArrayList<>();
 
         GsonBuilder gsonBuilder = new GsonBuilder();
         gson = gsonBuilder.create();
@@ -188,8 +178,6 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
             boolean allowed = checkAllPermissions();
             if(allowed){
                 accountVerifiedAndFree();
-            }else {
-                return;
             }
         }
     };
@@ -290,14 +278,11 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        if(getContext()==null){
-                            return;
-                        }
-                        Toast.makeText(getContext(),"Error, please try again.", Toast.LENGTH_LONG);
+                        Toast.makeText(getContext(),"Error, please try again.", Toast.LENGTH_LONG).show();
                     }
                 });
 
-        // Access the RequestQueue through your singleton class.
+        verifiedRequest.setTag(TAG);
         MyVolleySingleton.getInstance(getContext()).addToRequestQueue(verifiedRequest);
     }
 
@@ -334,9 +319,11 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
                         if(getContext()==null){
                             return;
                         }
-                        Toast.makeText(getContext(),"Error, please try again.", Toast.LENGTH_LONG);
+                        Toast.makeText(getContext(),"Error, please try again.", Toast.LENGTH_LONG).show();
                     }
                 });
+
+        freeRequest.setTag(TAG);
         MyVolleySingleton.getInstance(getContext()).addToRequestQueue(freeRequest);
 
     }
@@ -360,7 +347,6 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.v("Confirmed RequestTrip", response.toString());
                         createdTrip = gson.fromJson(response.toString(),Trip.class);
                         Bundle bundle = new Bundle();
                         bundle.putString("EVENT","CREATE");
@@ -379,10 +365,11 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
                         if(getContext()==null){
                             return;
                         }
-                        Toast.makeText(getContext(),"Error, please try again.", Toast.LENGTH_LONG);
+                        Toast.makeText(getContext(),"Error, please try again.", Toast.LENGTH_LONG).show();
                     }
                 });
 
+        tripRequest.setTag(TAG);
         MyVolleySingleton.getInstance(getContext()).addToRequestQueue(tripRequest);
 
     }
@@ -473,33 +460,23 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
         params.gravity = Gravity.TOP;
         view.setLayoutParams(params);
         snackbar.show();
-
-        Log.v("Tracking....", "RESUMED");
-    }
+        }
 
     @Override
     public void onPause() {
         super.onPause();
         Alerter.clearCurrent(getActivity());
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-        Log.v("Tracking....", "PAUSED");
     }
 
     @Override
     public void onStop() {
         super.onStop();
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-        Log.v("Tracking....", "STOPPED");
+        if (MyVolleySingleton.getInstance(getActivity()).getRequestQueue() != null) {
+            MyVolleySingleton.getInstance(getActivity()).getRequestQueue().cancelAll(TAG);
+        }
     }
-
-    private PolygonOptions gucBorders = new PolygonOptions()
-            .add(new LatLng(29.990504, 31.438447),
-                    new LatLng(29.986922, 31.438330),
-                    new LatLng(29.986035, 31.437930),
-                    new LatLng(29.984474, 31.437909),
-                    new LatLng(29.984441, 31.445711),
-                    new LatLng(29.989794, 31.445640),
-                    new LatLng(29.990705, 31.444224) );
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -511,9 +488,6 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
         mMap.getUiSettings().setMapToolbarEnabled(false);
         mMap.getUiSettings().setScrollGesturesEnabled(true);
 
-        boolean success = googleMap.setMapStyle(new MapStyleOptions(getResources()
-                .getString(R.string.style_json)));
-        // Constrain the camera target to the Adelaide bounds.
         mMap.setLatLngBoundsForCameraTarget(GucPoints.GUC);
 
         addMarkersToMap();
@@ -611,7 +585,6 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
         @Override
         public void onLocationResult(LocationResult locationResult) {
             super.onLocationResult(locationResult);
-            Log.v("LocationCallback", "UPDATING LOCATION");
             for (Location location : locationResult.getLocations()){
                 lastLocation = new LatLng(location.getLatitude(), location.getLongitude());
             }

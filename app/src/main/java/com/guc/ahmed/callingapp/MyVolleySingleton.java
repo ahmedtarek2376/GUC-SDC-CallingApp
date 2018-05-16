@@ -1,4 +1,4 @@
-package com.guc.ahmed.callingapp.apiclasses;
+package com.guc.ahmed.callingapp;
 
 import android.content.Context;
 

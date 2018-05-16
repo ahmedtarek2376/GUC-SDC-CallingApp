@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.location.Location;
@@ -13,7 +12,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
@@ -54,7 +52,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.guc.ahmed.callingapp.MainActivity;
 import com.guc.ahmed.callingapp.R;
-import com.guc.ahmed.callingapp.apiclasses.MyVolleySingleton;
+import com.guc.ahmed.callingapp.MyVolleySingleton;
 import com.guc.ahmed.callingapp.objects.RequestTrip;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
 import com.guc.ahmed.callingapp.gucpoints.GucPoints;
@@ -95,6 +93,8 @@ public class PickupFragment extends Fragment
     private Gson gson;
     private ArrayList<GucPlace> gucPlaces;
 
+    private static final String TAG = "PickupFragment";
+
     public void setRequestTrip(RequestTrip requestTrip) {
         this.requestTrip = requestTrip;
     }
@@ -108,8 +108,6 @@ public class PickupFragment extends Fragment
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_pickup, container, false);
-
-        Log.v("PICKUP", "onCreate");
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
@@ -168,9 +166,7 @@ public class PickupFragment extends Fragment
         snackbar.show();
 
         resumeCarsUpdates();
-
-        Log.v("PICKUP", "onREsume");
-    }
+        }
 
     @Override
     public void onPause() {
@@ -178,14 +174,15 @@ public class PickupFragment extends Fragment
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
         Alerter.clearCurrent(getActivity());
         stopCarsUpdates();
-        Log.v("PICKUP", "onPause");
     }
 
     @Override
     public void onStop() {
         super.onStop();
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-        Log.v("PICKUP", "onStop");
+        if (MyVolleySingleton.getInstance(getActivity()).getRequestQueue() != null) {
+            MyVolleySingleton.getInstance(getActivity()).getRequestQueue().cancelAll(TAG);
+        }
     }
 
     private PolygonOptions gucBorders = new PolygonOptions()
@@ -199,7 +196,6 @@ public class PickupFragment extends Fragment
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        Log.v("PICKUP", "onMapCreated");
         mMap = googleMap;
 
         mMap.clear();
@@ -267,8 +263,6 @@ public class PickupFragment extends Fragment
                                 if(getContext()==null){
                                     return;
                                 }
-                                Log.v("AvailableCars", response.toString());
-
                                 for(int i=0;i<response.length();i++){
 
                                     try {
@@ -289,6 +283,7 @@ public class PickupFragment extends Fragment
                             }
                         });
 
+                jsonObjectRequest.setTag(TAG);
                 // Access the RequestQueue through your singleton class.
                 MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
 
@@ -301,9 +296,6 @@ public class PickupFragment extends Fragment
     }
 
     private void drawCarMarker(String carID, LatLng latLng) {
-
-        Log.v("carID", carID);
-        Log.v("carLatLng", latLng.toString());
         Marker marker = markers.get(carID);
 
         if(marker != null){
@@ -426,6 +418,7 @@ public class PickupFragment extends Fragment
                     }
                 });
 
+        jsonArrayRequest.setTag(TAG);
         // Access the RequestQueue through your singleton class.
         MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonArrayRequest);
 
