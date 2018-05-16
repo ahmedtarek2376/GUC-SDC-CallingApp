@@ -6,6 +6,16 @@
     tools:context=".fragments.TripHistoryFragment"
     android:orientation="vertical">
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="@android:style/Widget.Holo.ProgressBar.Horizontal"
+        android:indeterminate="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:progress="40"
+        android:indeterminateBehavior="cycle"
+        android:indeterminateTint="@color/colorAccent"/>
+
     <LinearLayout
         android:id="@+id/no_history"
         android:layout_width="match_parent"
@@ -21,6 +31,7 @@
             android:tint="@color/text_grey_light"
             android:layout_marginTop="50dp"/>
         <TextView
+            android:id="@+id/history_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"

@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -44,11 +45,13 @@ public class TripHistoryFragment extends Fragment {
     private MyAdapter mAdapter;
     private List<RequestTrip> tripHistory;
     private LinearLayout noHistory;
+    private TextView historyMessage;
+    private ProgressBar progressBar;
 
     private String gmail;
     private Profile profile;
     private Gson gson;
-    private static final String TAG = "TRIPHISTORYFRAGMENT";
+    private static final String TAG = "TripHistoryFragment";
 
     public TripHistoryFragment() {
         // Required empty public constructor
@@ -63,13 +66,10 @@ public class TripHistoryFragment extends Fragment {
 
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Ride History");
 
-        gmail = getArguments().getString("gmail");
-        profile = getProfile(gmail);
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gson = gsonBuilder.create();
-
         noHistory = view.findViewById(R.id.no_history);
-        
+        historyMessage = view.findViewById(R.id.history_message);
+        progressBar = view.findViewById(R.id.progressBar);
+
         tripHistory = new ArrayList<>();
         mRecyclerView = view.findViewById(R.id.trip_history_recycler_view);
         mRecyclerView.setHasFixedSize(true);
@@ -77,12 +77,17 @@ public class TripHistoryFragment extends Fragment {
         mRecyclerView.setLayoutManager(mLayoutManager);
         mAdapter = new MyAdapter();
         mRecyclerView.setAdapter(mAdapter);
+
+        gmail = MainActivity.mAuth.getCurrentUser().getEmail();
+        profile = getProfile(gmail);
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gson = gsonBuilder.create();
         
         return view;
     }
 
     private Profile getProfile(String gmail) {
-        getActivity().setProgressBarIndeterminateVisibility(true);
+        progressBar.setVisibility(View.VISIBLE);
         String url = getResources().getString(R.string.url_get_profile) + gmail;
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
@@ -90,15 +95,15 @@ public class TripHistoryFragment extends Fragment {
 
                     @Override
                     public void onResponse(JSONObject response) {
+                        progressBar.setVisibility(View.GONE);
                         profile = gson.fromJson(response.toString(), Profile.class);
                         tripHistory = getTripHistory();
                         if(tripHistory.size()>0){
                             mAdapter.notifyDataSetChanged();
-                            getActivity().setProgressBarIndeterminateVisibility(false);
                             noHistory.setVisibility(View.GONE);
                             mRecyclerView.setVisibility(View.VISIBLE);
                         } else {
-                            getActivity().setProgressBarIndeterminateVisibility(false);
+                            historyMessage.setText("You have no previous rides");
                             noHistory.setVisibility(View.VISIBLE);
                             mRecyclerView.setVisibility(View.GONE);
                         }
@@ -108,14 +113,15 @@ public class TripHistoryFragment extends Fragment {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        getActivity().setProgressBarIndeterminateVisibility(false);
+                        progressBar.setVisibility(View.GONE);
                         noHistory.setVisibility(View.VISIBLE);
-                        mRecyclerView.setVisibility(View.GONE);                    }
+                        mRecyclerView.setVisibility(View.GONE);
+                        historyMessage.setText("Error loading your ride history");
+                    }
                 });
 
         jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(2500,2,1) );
         jsonObjectRequest.setTag(TAG);
-// Access the RequestQueue through your singleton class.
         MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
 
         return null;
