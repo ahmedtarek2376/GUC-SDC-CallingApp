@@ -9,7 +9,7 @@ import java.util.List;
 public class Trip {
     private String id;
 
-    private String event;
+    private List<String> events;
 
     private Date requestTime;
     private Date carArriveTime;
@@ -22,7 +22,6 @@ public class Trip {
     private List<TripDestination> destinations;
 
     private String carID;
-    private String carFcmToken;
     private String userID;
     private String userFcmToken;
     private String tabletFcmToken;
@@ -106,14 +105,6 @@ public class Trip {
         this.cancelTime = cancelTime;
     }
 
-    public String getCarFcmToken() {
-        return carFcmToken;
-    }
-
-    public void setCarFcmToken(String carFcmToken) {
-        this.carFcmToken = carFcmToken;
-    }
-
     public String getUserFcmToken() {
         return userFcmToken;
     }
@@ -170,7 +161,7 @@ public class Trip {
         return requestTrip;
     }
 
-    public String getEvent() {
-        return event;
+    public List<String> getEvents() {
+        return events;
     }
 }

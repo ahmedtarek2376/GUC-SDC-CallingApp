@@ -246,7 +246,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
             button.setProgress(0);
 
             return false;
-        }else if(GucPoints.GUC.contains(lastLocation)) {
+        }else if(!GucPoints.GUC.contains(lastLocation)) {
             ////////////////////This has to be changed to NOT////////////////////////////////
             Alerter.clearCurrent(getActivity());
             alert = Alerter.create(getActivity())
@@ -466,7 +466,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
         CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.confirm_fragment);
         Snackbar snackbar = Snackbar.make(coordinatorLayout, "Please revise your trip details before requesting", Snackbar.LENGTH_LONG);
         View view = snackbar.getView();
-        view.setBackgroundColor(getResources().getColor(R.color.fbutton_color_turquoise));
+        view.setBackgroundColor(getResources().getColor(R.color.snackbar_black));
         TextView textView = view.findViewById(android.support.design.R.id.snackbar_text);
         textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         CoordinatorLayout.LayoutParams params=(CoordinatorLayout.LayoutParams)view.getLayoutParams();

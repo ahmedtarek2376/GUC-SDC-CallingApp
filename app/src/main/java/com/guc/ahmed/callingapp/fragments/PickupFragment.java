@@ -159,7 +159,7 @@ public class PickupFragment extends Fragment
         CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.pickup_fragment);
         Snackbar snackbar = Snackbar.make(coordinatorLayout, "Click on a pin to choose your pickup location", Snackbar.LENGTH_LONG);
         View view = snackbar.getView();
-        view.setBackgroundColor(getResources().getColor(R.color.fbutton_color_turquoise));
+        view.setBackgroundColor(getResources().getColor(R.color.snackbar_black));
         TextView textView = view.findViewById(android.support.design.R.id.snackbar_text);
         textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         CoordinatorLayout.LayoutParams params=(CoordinatorLayout.LayoutParams)view.getLayoutParams();

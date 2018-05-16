@@ -364,19 +364,25 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
         drawTripPathGraph();
         startElapsedTime();
         String status = "Unknown";
-        String event = currentTrip.getEvent();
+        String event = currentTrip.getEvents().get(currentTrip.getEvents().size()-1);
 
-        if(event.equalsIgnoreCase(TripEvent.END.name())){
+        if(event.equalsIgnoreCase(TripEvent.CHANGE_DESTINATION.name())){
+            event = currentTrip.getEvents().get(currentTrip.getEvents().size()-2);
+        }
+
+        if(event.equalsIgnoreCase(TripEvent.END.name()) || currentTrip.getEndTime()!=null ){
             timeElapsed.stop();
             status = "Ride Ended";
+            edit.setVisibility(View.GONE);
             buttonCancel.setVisibility(View.GONE);
             buttonEnd.setVisibility(View.GONE);
             buttonStart.setVisibility(View.GONE);
             buttonContinue.setVisibility(View.GONE);
             buttonDone.setVisibility(View.VISIBLE);
-        }else if(event.equalsIgnoreCase(TripEvent.CANCEL.name())){
+        }else if(event.equalsIgnoreCase(TripEvent.CANCEL.name()) || currentTrip.getCancelTime()!=null ){
             timeElapsed.stop();
             status = "Ride Canceled";
+            edit.setVisibility(View.GONE);
             buttonCancel.setVisibility(View.GONE);
             buttonEnd.setVisibility(View.GONE);
             buttonStart.setVisibility(View.GONE);

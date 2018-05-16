@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.akexorcist.googledirection.model.Line;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -43,6 +44,7 @@ public class TripHistoryFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private MyAdapter mAdapter;
     private List<RequestTrip> tripHistory;
+    private LinearLayout noHistory;
 
     private String gmail;
     private Profile profile;
@@ -59,12 +61,14 @@ public class TripHistoryFragment extends Fragment {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_trip_history, container, false);
 
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("RequestTrip History");
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Ride History");
 
         gmail = getArguments().getString("gmail");
         profile = getProfile(gmail);
         GsonBuilder gsonBuilder = new GsonBuilder();
         gson = gsonBuilder.create();
+
+        noHistory = view.findViewById(R.id.no_history);
         
         tripHistory = new ArrayList<>();
         mRecyclerView = view.findViewById(R.id.trip_history_recycler_view);
@@ -78,6 +82,7 @@ public class TripHistoryFragment extends Fragment {
     }
 
     private Profile getProfile(String gmail) {
+        getActivity().setProgressBarIndeterminateVisibility(true);
         String url = getResources().getString(R.string.url_get_profile) + gmail;
         Log.v("TripHistory", url);
 
@@ -89,7 +94,17 @@ public class TripHistoryFragment extends Fragment {
                         Log.v("TripHistory", "It worked");
                         profile = gson.fromJson(response.toString(), Profile.class);
                         tripHistory = getTripHistory();
-                        mAdapter.notifyDataSetChanged();
+                        if(tripHistory.size()>0){
+                            mAdapter.notifyDataSetChanged();
+                            getActivity().setProgressBarIndeterminateVisibility(false);
+                            noHistory.setVisibility(View.GONE);
+                            mRecyclerView.setVisibility(View.VISIBLE);
+                        } else {
+                            getActivity().setProgressBarIndeterminateVisibility(false);
+                            noHistory.setVisibility(View.VISIBLE);
+                            mRecyclerView.setVisibility(View.GONE);
+                        }
+
                     }
                 }, new Response.ErrorListener() {
 
