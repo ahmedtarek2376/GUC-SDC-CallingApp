@@ -460,7 +460,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
         mMap.setBuildingsEnabled(false);
         mMap.getUiSettings().setMapToolbarEnabled(false);
 
-        mMap.setPadding(0,250,0,250);
+        mMap.setPadding(0,300,0,250);
 
         boolean success = googleMap.setMapStyle(new MapStyleOptions(getResources()
                 .getString(R.string.style_json)));
@@ -477,7 +477,7 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         //to be removed
-        LatLng latLng = new LatLng(29.987243, 31.441902);
+        LatLng latLng = new LatLng(29.986654, 31.440191);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
 
@@ -608,7 +608,6 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
             customMarker.setImage(R.drawable.ic_directions_car_black_24dp);
             carMarker = mMap.addMarker(new MarkerOptions().position(retrievedCar.getLatLng())
                     .title("CAR").icon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView())));
-//            mMap.moveCamera(CameraUpdateFactory.newLatLng(retrievedCar.getLatLng()));
         } else {
 //            Marker newMarker = carMarker;
             carMarker.remove();

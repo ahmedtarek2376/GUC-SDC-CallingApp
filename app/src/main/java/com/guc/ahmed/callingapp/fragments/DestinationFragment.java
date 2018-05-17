@@ -141,7 +141,7 @@ public class DestinationFragment extends Fragment
         if(requestTrip != null && requestTrip.getDestinations() != null){
             ArrayList<GucPlace> arrayList = new ArrayList<>();
             for (LatLng latLng : requestTrip.getDestinations()){
-               arrayList.add( getGucPlaceByLatLng(latLng));
+               arrayList.add(GucPoints.getGucPlaceByLatLng(latLng));
             }
             destinationTxt.setVisibility(View.GONE);
             recyclerLayout.setVisibility(View.VISIBLE);
@@ -179,16 +179,6 @@ public class DestinationFragment extends Fragment
             mMap.setMyLocationEnabled(true);
         }
         actionBar.setTitle("Choose Your Destination");
-
-//        alert = Alerter.create(getActivity())
-//                .setTitle("Choose Your Destination")
-//                .setText("Click on a pin on the map to choose where you want to go. You can choose up to 3 destinations. You can reorder your chosen destinations by dragging them.")
-//                .enableSwipeToDismiss()
-//                .enableIconPulse(true)
-//                .setIcon(R.drawable.custom_marker_end)
-//                .setBackgroundColorRes(R.color.colorAccent)
-//                .setDuration(5000)
-//                .show();
 
         CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.destination_fragment);
         Snackbar snackbar = Snackbar.make(coordinatorLayout, "Choose up to 3 destinations (ordered)", Snackbar.LENGTH_LONG);
@@ -256,25 +246,15 @@ public class DestinationFragment extends Fragment
 
         mMap.setOnInfoWindowClickListener(onInfoWindowClickListener);
 
-//        Polygon polygon = mMap.addPolygon(
-//                gucBorders
-//                        .strokeColor(Color.BLUE).strokeWidth(5)
-//                        .fillColor(Color.BLUE)
-//                        .strokeJointType(JointType.BEVEL)
-//        );
-//        polygon.setFillColor(Color.argb(
-//                20, Color.red(Color.BLUE), Color.green(Color.BLUE),
-//                Color.blue(Color.BLUE)));
-
         locationRequest = new LocationRequest();
         locationRequest.setInterval(3000);
         locationRequest.setFastestInterval(3000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         //to be removed
-        LatLng latLng = new LatLng(29.9859, 31.4401);
+        LatLng latLng = new LatLng(29.986654, 31.440191);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(17));
         mMap.setOnMarkerClickListener(onMarkerClickListener);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
@@ -304,7 +284,7 @@ public class DestinationFragment extends Fragment
         public boolean onMarkerClick(Marker marker) {
 
             if(! marker.getTitle().equalsIgnoreCase(pickupMarker.getTitle() ) ) {
-                GucPlace gucPlace = getGucPlaceByName(marker.getTitle());
+                GucPlace gucPlace = GucPoints.getGucPlaceByName(marker.getTitle());
 
                 if(addToChosenDestinations(gucPlace)){
                     addMarkersToMap();
@@ -357,7 +337,7 @@ public class DestinationFragment extends Fragment
         mMap.clear();
 
         CustomMarker customMarker = new CustomMarker(getContext());
-        customMarker.setImage(R.drawable.custom_marker_pin);
+        customMarker.setImage(R.drawable.ic_marker_black);
 
         for (GucPlace place : MainActivity.gucPlaces){
             customMarker.setText(place.getName());
@@ -367,7 +347,7 @@ public class DestinationFragment extends Fragment
             );
         }
 
-        pickupMarker = markers.get(getGucPlaceByLatLng(requestTrip.getPickupLocation()).getName());
+        pickupMarker = markers.get(GucPoints.getGucPlaceByLatLng(requestTrip.getPickupLocation()).getName());
         customMarker.setImage(R.drawable.custom_marker_start);
         customMarker.setText(pickupMarker.getTitle());
         pickupMarker.setIcon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView()));
@@ -380,24 +360,6 @@ public class DestinationFragment extends Fragment
             customMarker.setText(place.getName());
             destination.setIcon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView()));
         }
-    }
-
-    public GucPlace getGucPlaceByName(String name){
-        for (GucPlace place : MainActivity.gucPlaces){
-            if(place.getName().equalsIgnoreCase(name)){
-                return place;
-            }
-        }
-        return null;
-    }
-
-    public GucPlace getGucPlaceByLatLng(LatLng latLng){
-        for (GucPlace place : MainActivity.gucPlaces){
-            if(place.getLatLng().equals(latLng)){
-                return place;
-            }
-        }
-        return null;
     }
 
     private LocationCallback locationCallback = new LocationCallback(){

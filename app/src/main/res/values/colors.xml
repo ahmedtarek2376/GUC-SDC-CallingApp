@@ -14,6 +14,10 @@
     <color name="icon_red">#D50000</color>
     <color name="confirm_blue">#4fc3f7</color>
     <color name="udacity_purple">#a951ed</color>
+    <color name="red_a100">#FF8A80</color>
+    <color name="red_a100_pressed">#ff786c</color>
+    <color name="green_a200">#a5d6a7</color>
+    <color name="green_a300_pressed">#81c784</color>
     <color name="snackbar_black">#8a000000</color>
 
 

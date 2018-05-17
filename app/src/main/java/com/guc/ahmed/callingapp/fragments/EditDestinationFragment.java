@@ -243,6 +243,8 @@ public class EditDestinationFragment extends Fragment
         mMap.setBuildingsEnabled(true);
         mMap.getUiSettings().setMapToolbarEnabled(false);
 
+        mMap.setPadding(0,300,0,0);
+
         boolean success = googleMap.setMapStyle(new MapStyleOptions(getResources()
                 .getString(R.string.style_json)));
 
@@ -263,9 +265,9 @@ public class EditDestinationFragment extends Fragment
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         //to be removed
-        LatLng latLng = new LatLng(29.9859, 31.4401);
+        LatLng latLng = new LatLng(29.986654, 31.440191);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(17));
         mMap.setOnMarkerClickListener(onMarkerClickListener);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
@@ -295,7 +297,7 @@ public class EditDestinationFragment extends Fragment
         public boolean onMarkerClick(Marker marker) {
 
             if(! marker.getTitle().equalsIgnoreCase(pickupMarker.getTitle() ) ) {
-                GucPlace gucPlace = getGucPlaceByName(marker.getTitle());
+                GucPlace gucPlace = GucPoints.getGucPlaceByName(marker.getTitle());
 
                 if(addToChosenDestinations(gucPlace)){
                     addMarkersToMap();
@@ -404,7 +406,7 @@ public class EditDestinationFragment extends Fragment
         mMap.clear();
 
         CustomMarker customMarker = new CustomMarker(getContext());
-        customMarker.setImage(R.drawable.custom_marker_pin);
+        customMarker.setImage(R.drawable.ic_marker_black);
 
         for (GucPlace place : MainActivity.gucPlaces){
             customMarker.setText(place.getName());
@@ -414,7 +416,7 @@ public class EditDestinationFragment extends Fragment
             );
         }
 
-        pickupMarker = markers.get(getGucPlaceByLatLng(requestTrip.getPickupLocation()).getName());
+        pickupMarker = markers.get(GucPoints.getGucPlaceByLatLng(requestTrip.getPickupLocation()).getName());
         customMarker.setImage(R.drawable.custom_marker_start);
         customMarker.setText(pickupMarker.getTitle());
         pickupMarker.setIcon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView()));
@@ -429,23 +431,6 @@ public class EditDestinationFragment extends Fragment
         }
     }
 
-    public GucPlace getGucPlaceByName(String name){
-        for (GucPlace place : MainActivity.gucPlaces){
-            if(place.getName().equalsIgnoreCase(name)){
-                return place;
-            }
-        }
-        return null;
-    }
-
-    public GucPlace getGucPlaceByLatLng(LatLng latLng){
-        for (GucPlace place : MainActivity.gucPlaces){
-            if(place.getLatLng().equals(latLng)){
-                return place;
-            }
-        }
-        return null;
-    }
 
     private LocationCallback locationCallback = new LocationCallback(){
         @Override

@@ -356,8 +356,8 @@
                         android:text="Continue to Next Destination"
                         android:textSize="16sp"
                         android:textColor="@color/colorPrimary"
-                        custom:pb_colorNormal="@android:color/holo_green_dark"
-                        custom:pb_colorPressed="@android:color/holo_green_light"
+                        custom:pb_colorNormal="@color/green_a300_pressed"
+                        custom:pb_colorPressed="@color/green_a200"
                         android:visibility="gone"
                         android:layout_marginTop="10dp"/>
 
@@ -368,8 +368,8 @@
                         android:text="End Ride"
                         android:textSize="16sp"
                         android:textColor="@color/colorPrimary"
-                        custom:pb_colorNormal="@android:color/holo_red_dark"
-                        custom:pb_colorPressed="@android:color/holo_red_light"
+                        custom:pb_colorNormal="@color/red_a100_pressed"
+                        custom:pb_colorPressed="@color/red_a100"
                         android:visibility="gone"
                         android:layout_marginTop="10dp"/>
 
@@ -380,8 +380,8 @@
                         android:text="Cancel Ride"
                         android:textSize="16sp"
                         android:textColor="@color/colorPrimary"
-                        custom:pb_colorNormal="@android:color/holo_red_dark"
-                        custom:pb_colorPressed="@android:color/holo_red_light"
+                        custom:pb_colorNormal="@color/red_a100_pressed"
+                        custom:pb_colorPressed="@color/red_a100"
                         android:visibility="gone"
                         android:layout_marginTop="10dp" />
 
@@ -394,8 +394,8 @@
                         android:text="DONE"
                         android:textSize="16sp"
                         android:textColor="@color/colorPrimary"
-                        custom:pb_colorNormal="@android:color/holo_green_light"
-                        custom:pb_colorPressed="@android:color/holo_green_light"
+                        custom:pb_colorNormal="@color/green_a300_pressed"
+                        custom:pb_colorPressed="@color/green_a200"
                         android:visibility="gone"
                         android:layout_marginTop="10dp"/>
 

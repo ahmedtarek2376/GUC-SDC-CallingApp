@@ -226,9 +226,9 @@ public class PickupFragment extends Fragment
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         //to be removed
-        LatLng latLng = new LatLng(29.987243, 31.441902);
+        LatLng latLng = new LatLng(29.986654, 31.440191);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(17));
 
 
         mMap.setOnMarkerClickListener(onMarkerClickListener);
@@ -336,7 +336,7 @@ public class PickupFragment extends Fragment
 
             CustomMarker customMarker = new CustomMarker(getContext());
             if(selectedMarker != null){
-                customMarker.setImage(R.drawable.custom_marker_pin);
+                customMarker.setImage(R.drawable.ic_marker_black);
                 customMarker.setText(selectedMarker.getTitle());
                 selectedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView()));
             }
@@ -429,7 +429,7 @@ public class PickupFragment extends Fragment
             return;
         }
         CustomMarker customMarker = new CustomMarker(getContext());
-        customMarker.setImage(R.drawable.custom_marker_pin);
+        customMarker.setImage(R.drawable.ic_marker_black);
         for (GucPlace place : places){
             customMarker.setText(place.getName());
             markers.put( place.getName(),
