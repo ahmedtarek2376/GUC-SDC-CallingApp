@@ -41,9 +41,11 @@ import com.akexorcist.googledirection.model.Direction;
 import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.util.DirectionConverter;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HttpResponse;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.dd.processbutton.iml.ActionProcessButton;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -79,6 +81,7 @@ import com.tapadoo.alerter.Alerter;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -358,7 +361,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
                         if(getContext()==null){
                             return;
                         }
-                        Toast.makeText(getContext(),"RequestTrip successfully requested.",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(),"Meet your car at the pickup location",Toast.LENGTH_SHORT).show();
                         ((MainActivity)getActivity()).showOnTripFragment(bundle);
                     }
                 }, new Response.ErrorListener() {
@@ -366,8 +369,23 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         button.setProgress(0);
-                        if(getContext()!=null)
-                            Toast.makeText(getContext(),"Network error, please try again.", Toast.LENGTH_LONG).show();
+                        if(getContext()!=null){
+                            NetworkResponse networkResponse = error.networkResponse;
+                            if (networkResponse != null && networkResponse.statusCode == 412) {
+                                AlertDialog continueDialog = new AlertDialog.Builder(getContext()).create();
+                                continueDialog.setTitle("No Available Cars");
+                                continueDialog.setMessage("Unfortunately, all the cars are busy handling rides now. Please try again later.");
+                                continueDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Ok", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                });
+                                continueDialog.show();
+                            } else {
+                                Toast.makeText(getContext(),"Network error, please try again.", Toast.LENGTH_LONG).show();
+                            }
+                        }
                     }
                 });
 
