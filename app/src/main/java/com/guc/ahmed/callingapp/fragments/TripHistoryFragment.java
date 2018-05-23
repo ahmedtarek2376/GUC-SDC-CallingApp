@@ -25,12 +25,14 @@ import com.google.gson.GsonBuilder;
 import com.guc.ahmed.callingapp.MainActivity;
 import com.guc.ahmed.callingapp.R;
 import com.guc.ahmed.callingapp.MyVolleySingleton;
+import com.guc.ahmed.callingapp.gucpoints.GucPoints;
 import com.guc.ahmed.callingapp.objects.Profile;
 import com.guc.ahmed.callingapp.objects.RequestTrip;
 import com.guc.ahmed.callingapp.gucpoints.GucPlace;
 
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -157,35 +159,31 @@ public class TripHistoryFragment extends Fragment {
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             RequestTrip trip = tripHistory.get(position);
-            holder.pickupTxt.setText(getGucPlaceByLatLng(trip.getPickupLocation()).getName());
+            holder.pickupTxt.setText(GucPoints.getGucPlaceByLatLng(trip.getPickupLocation()).getName());
+
+            String time = new SimpleDateFormat("hh:mm a").format(trip.getRequestTime());
+            String date = new SimpleDateFormat("dd/MM/yyyy").format(trip.getRequestTime());
+            holder.tripDate.setText(date + " at " + time);
+
             if(trip.getCancelTime() != null){
                 holder.tripStatus.setText("Canceled");
             }else if(tripHistory.get(position).getEndTime() != null){
                 holder.tripStatus.setText("Completed");
             }
-            holder.destination1Txt.setText(getGucPlaceByLatLng(trip.getDestinations().get(0)).getName());
+            holder.destination1Txt.setText(GucPoints.getGucPlaceByLatLng(trip.getDestinations().get(0)).getName());
             if(trip.getDestinations().size() == 2){
-                holder.destination2Txt.setText(getGucPlaceByLatLng(trip.getDestinations().get(1)).getName());
+                holder.destination2Txt.setText(GucPoints.getGucPlaceByLatLng(trip.getDestinations().get(1)).getName());
                 holder.destination2.setVisibility(View.VISIBLE);
                 holder.dot1to2.setVisibility(View.VISIBLE);
             }else if(trip.getDestinations().size() == 3){
-                holder.destination2Txt.setText(getGucPlaceByLatLng(trip.getDestinations().get(1)).getName());
-                holder.destination3Txt.setText(getGucPlaceByLatLng(trip.getDestinations().get(2)).getName());
+                holder.destination2Txt.setText(GucPoints.getGucPlaceByLatLng(trip.getDestinations().get(1)).getName());
+                holder.destination3Txt.setText(GucPoints.getGucPlaceByLatLng(trip.getDestinations().get(2)).getName());
                 holder.destination2.setVisibility(View.VISIBLE);
                 holder.dot1to2.setVisibility(View.VISIBLE);
                 holder.destination3.setVisibility(View.VISIBLE);
                 holder.dot2to3.setVisibility(View.VISIBLE);
             }
 
-        }
-
-        public GucPlace getGucPlaceByLatLng(LatLng latLng){
-            for (GucPlace place : MainActivity.gucPlaces){
-                if(place.getLatLng().equals(latLng)){
-                    return place;
-                }
-            }
-            return null;
         }
 
         @Override

@@ -239,7 +239,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
             button.setProgress(0);
 
             return false;
-        }else if(GucPoints.GUC.contains(lastLocation)) {
+        }else if(!GucPoints.GUC.contains(lastLocation)) {
             ////////////////////This has to be changed to NOT////////////////////////////////
             Alerter.clearCurrent(getActivity());
             alert = Alerter.create(getActivity())
