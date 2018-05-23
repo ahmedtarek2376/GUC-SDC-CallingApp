@@ -10,6 +10,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -37,6 +39,9 @@ public class ValidateFragment extends Fragment {
     private View view;
     private Gson gson;
     private static final String TAG = "ValidateFragment";
+    private RadioGroup radioGroup;
+    private RadioButton radioStudent;
+    private RadioButton radioStaff;
 
     public ValidateFragment() {
 
@@ -63,60 +68,91 @@ public class ValidateFragment extends Fragment {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gson = gsonBuilder.create();
 
+        radioGroup = view.findViewById(R.id.radio_group);
+        radioStudent = view.findViewById(R.id.radio_student);
+        radioStaff = view.findViewById(R.id.radio_staff);
 
         verify_btn = view.findViewById(R.id.verify_button);
         verify_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                verify_btn.setProgress(1);
 
-                Profile profile = new Profile();
-                profile.setGmail(MainActivity.mAuth.getCurrentUser().getEmail());
-                profile.setGucMail(gucMail.getText().toString());
-
-                String str = gson.toJson(profile);
-                JSONObject profilePost = new JSONObject();
-                try {
-                    profilePost = new JSONObject(str);
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                if(gucMail.getText() == null || gucMail.getText().toString().length()==0){
+                    Toast toast = Toast.makeText(getContext(), "Please enter your GUC mail.", Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL, 0,0);
+                    toast.show();
+                }else if(radioGroup.getCheckedRadioButtonId()!= -1){
+                    sendMail();
+                }else {
+                    Toast toast = Toast.makeText(getContext(), "Please choose one of the choices.", Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL, 0,0);
+                    toast.show();
                 }
-
-                String url = getResources().getString(R.string.url_verify_profile);
-                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
-                        (Request.Method.POST, url, profilePost, new Response.Listener<JSONObject>() {
-
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                String message = "";
-                                try {
-                                    message = response.getString("message");
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                                Toast toast = Toast.makeText(getContext(), message, Toast.LENGTH_LONG);
-                                toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL, 0,0);
-                                toast.show();
-                                verify_btn.setProgress(0);
-                            }
-                        }, new Response.ErrorListener() {
-
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                if(getContext()!=null){
-                                    verify_btn.setProgress(0);
-                                }
-                            }
-                        });
-
-                jsonObjectRequest.setTag(TAG);
-                MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
-
-                Snackbar.make(getView(), "Sending verification mail...", Snackbar.LENGTH_LONG).show();
             }
         });
 
         return view;
     }
+
+    private void sendMail() {
+        verify_btn.setProgress(1);
+
+        String gucMailText = "";
+
+        int selectedId = radioGroup.getCheckedRadioButtonId();
+        if(selectedId==radioStudent.getId()){
+            gucMailText = gucMail.getText().toString() + "@student.guc.edu.eg";
+        }else{
+            gucMailText = gucMail.getText().toString() + "@guc.edu.eg";
+        }
+
+        Profile profile = new Profile();
+        profile.setGmail(MainActivity.mAuth.getCurrentUser().getEmail());
+        profile.setGucMail(gucMailText);
+
+        String str = gson.toJson(profile);
+        JSONObject profilePost = new JSONObject();
+        try {
+            profilePost = new JSONObject(str);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String url = getResources().getString(R.string.url_verify_profile);
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
+                (Request.Method.POST, url, profilePost, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        String message = "";
+                        try {
+                            message = response.getString("message");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        Toast toast = Toast.makeText(getContext(), message, Toast.LENGTH_LONG);
+                        toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL, 0,0);
+                        toast.show();
+                        verify_btn.setProgress(0);
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        if(getContext()!=null){
+                            Toast toast = Toast.makeText(getContext(), "Error. Check that your email is correct.", Toast.LENGTH_LONG);
+                            toast.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL, 0,0);
+                            toast.show();
+                            verify_btn.setProgress(0);
+                        }
+                    }
+                });
+
+        jsonObjectRequest.setTag(TAG);
+        MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonObjectRequest);
+
+        Snackbar.make(getView(), "Sending verification mail...", Snackbar.LENGTH_LONG).show();
+    }
+
 
 }

@@ -28,8 +28,31 @@
                 android:ems="10"
                 android:inputType="textPersonName"
                 android:hint="Enter your GUC mail"
-                android:layout_marginBottom="20dp"
                 />
+
+
+            <RadioGroup
+                android:id="@+id/radio_group"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:layout_marginBottom="10dp">
+
+                <RadioButton
+                    android:id="@+id/radio_student"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" @student.guc.edu.eg     "
+                    android:textColor="@color/text_grey_dark"/>
+
+                <RadioButton
+                    android:id="@+id/radio_staff"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" @guc.edu.eg"
+                    android:textColor="@color/text_grey_dark"
+                    android:layout_gravity="right"/>
+            </RadioGroup>
 
             <com.dd.processbutton.iml.ActionProcessButton
                 android:id="@+id/verify_button"

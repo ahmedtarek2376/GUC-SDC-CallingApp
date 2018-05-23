@@ -10,7 +10,7 @@
     app:contentPaddingRight="16dp"
     app:contentPaddingLeft="16dp"
     app:contentPaddingTop="24dp"
-    app:contentPadding="24dp">
+    app:contentPaddingBottom="8dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -24,7 +24,8 @@
             android:layout_height="wrap_content"
             android:text="22 April, 09:08 PM"
             android:textColor="@color/colorAccent"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -218,6 +219,7 @@
 
 
         <TextView
+            android:layout_marginTop="8dp"
             android:id="@+id/trip_history_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

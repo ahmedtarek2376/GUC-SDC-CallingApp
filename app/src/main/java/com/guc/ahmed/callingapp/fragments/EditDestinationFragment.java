@@ -517,13 +517,11 @@ public class EditDestinationFragment extends Fragment
             holder.destinationName.setText(chosenDestinations.get(position).getName());
 
             if(position<requestTrip.getDestinations().size() && requestTrip.getDestinations().get(position).isArrived()){
-                holder.handleView.setImageResource(R.drawable.ic_done_black_24dp);
-                holder.handleView.setColorFilter(getResources().getColor(R.color.text_grey_light));
+                holder.handleView.setVisibility(View.VISIBLE);
                 holder.deleteView.setVisibility(View.GONE);
                 holder.destinationName.setTextColor(getResources().getColor(R.color.text_grey_light));
             } else {
-
-                holder.handleView.setImageResource(R.drawable.reorder);
+                holder.handleView.setVisibility(View.INVISIBLE);
                 holder.deleteView.setVisibility(View.VISIBLE);
                 holder.destinationName.setTextColor(getResources().getColor(R.color.text_grey_dark));
 

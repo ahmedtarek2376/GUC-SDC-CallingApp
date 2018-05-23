@@ -374,7 +374,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
                             if (networkResponse != null && networkResponse.statusCode == 412) {
                                 AlertDialog continueDialog = new AlertDialog.Builder(getContext()).create();
                                 continueDialog.setTitle("No Available Cars");
-                                continueDialog.setMessage("Unfortunately, all the cars are busy handling rides now. Please try again later.");
+                                continueDialog.setMessage("Unfortunately, all cars are busy.\nPlease try again later.");
                                 continueDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Ok", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
@@ -526,9 +526,9 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         //to be removed
-        LatLng latLng = new LatLng(29.987243, 31.441902);
+        LatLng latLng = new LatLng(29.986654, 31.440191);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(17));
 
         drawTripRoute();
 
