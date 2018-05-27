@@ -460,7 +460,12 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
         mMap.setBuildingsEnabled(false);
         mMap.getUiSettings().setMapToolbarEnabled(false);
 
-        mMap.setPadding(0,300,0,250);
+        //to be removed
+        LatLng latLng = new LatLng(29.986654, 31.440191);
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
+
+        mMap.setPadding(0,300,0,300);
 
         boolean success = googleMap.setMapStyle(new MapStyleOptions(getResources()
                 .getString(R.string.style_json)));
@@ -475,11 +480,6 @@ public class OnTripFragment extends Fragment implements OnMapReadyCallback, View
         locationRequest.setInterval(3000);
         locationRequest.setFastestInterval(3000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        //to be removed
-        LatLng latLng = new LatLng(29.986654, 31.440191);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
 
         updateData(null);
 

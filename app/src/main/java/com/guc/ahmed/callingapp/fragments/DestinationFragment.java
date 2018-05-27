@@ -181,7 +181,7 @@ public class DestinationFragment extends Fragment
         actionBar.setTitle("Choose Your Destination");
 
         CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.destination_fragment);
-        Snackbar snackbar = Snackbar.make(coordinatorLayout, "Choose up to 3 destinations (ordered)", Snackbar.LENGTH_LONG);
+        Snackbar snackbar = Snackbar.make(coordinatorLayout, "Choose up to 3 destinations, drag to reorder", Snackbar.LENGTH_INDEFINITE);
         View view = snackbar.getView();
         view.setBackgroundColor(getResources().getColor(R.color.snackbar_black));
         TextView textView = view.findViewById(android.support.design.R.id.snackbar_text);
@@ -229,8 +229,14 @@ public class DestinationFragment extends Fragment
         mMap.getUiSettings().setTiltGesturesEnabled(true);
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMap.setMinZoomPreference(16.0f);
-        mMap.setBuildingsEnabled(true);
+        mMap.setBuildingsEnabled(false);
         mMap.getUiSettings().setMapToolbarEnabled(false);
+
+        LatLng latLng = new LatLng(29.986654, 31.440191);
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(17));
+
+        mMap.setPadding(0,150,0,0);
 
         boolean success = googleMap.setMapStyle(new MapStyleOptions(getResources()
                 .getString(R.string.style_json)));
@@ -251,10 +257,6 @@ public class DestinationFragment extends Fragment
         locationRequest.setFastestInterval(3000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        //to be removed
-        LatLng latLng = new LatLng(29.986654, 31.440191);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(17));
         mMap.setOnMarkerClickListener(onMarkerClickListener);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
@@ -305,7 +307,8 @@ public class DestinationFragment extends Fragment
             recyclerLayout.setVisibility(View.VISIBLE);
             return true;
         }else {
-            Snackbar.make(getView(),"You can choose maximum 3 destinations",Snackbar.LENGTH_SHORT).show();
+            if(chosenDestinations.size()>2 )
+                Snackbar.make(getView(),"You can choose maximum 3 destinations",Snackbar.LENGTH_SHORT).show();
             return false;
         }
     }

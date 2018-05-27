@@ -42,7 +42,7 @@
                     android:layout_height="wrap_content"
                     android:text="Ride Details"
                     android:textSize="20sp"
-                    android:textColor="@color/colorAccent"
+                    android:textColor="@color/text_grey_dark"
                     android:textAlignment="center"/>
 
             <LinearLayout

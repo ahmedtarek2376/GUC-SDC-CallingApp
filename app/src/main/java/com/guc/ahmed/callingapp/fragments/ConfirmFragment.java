@@ -231,7 +231,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
             Alerter.clearCurrent(getActivity());
             alert = Alerter.create(getActivity())
                     .setTitle("Can not get Location updates !")
-                    .setText("Please check your location settings.")
+                    .setText("Please try requesting again. If the problem persists, please check your location settings.")
                     .enableIconPulse(true)
                     .setBackgroundColorRes(R.color.red_error)
                     .setDuration(5000)
@@ -239,7 +239,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
             button.setProgress(0);
 
             return false;
-        }else if(!GucPoints.GUC.contains(lastLocation)) {
+        }else if(GucPoints.GUC.contains(lastLocation)) {
             ////////////////////This has to be changed to NOT////////////////////////////////
             Alerter.clearCurrent(getActivity());
             alert = Alerter.create(getActivity())
@@ -471,7 +471,7 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
         actionBar.setTitle("Request Car");
 
         CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.confirm_fragment);
-        Snackbar snackbar = Snackbar.make(coordinatorLayout, "Please revise your trip details before requesting", Snackbar.LENGTH_LONG);
+        Snackbar snackbar = Snackbar.make(coordinatorLayout, "Please revise your ride details before requesting", Snackbar.LENGTH_INDEFINITE);
         View view = snackbar.getView();
         view.setBackgroundColor(getResources().getColor(R.color.snackbar_black));
         TextView textView = view.findViewById(android.support.design.R.id.snackbar_text);
@@ -509,6 +509,12 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
         mMap.setBuildingsEnabled(false);
         mMap.getUiSettings().setMapToolbarEnabled(false);
 
+        LatLng latLng = new LatLng(29.986654, 31.440191);
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(17));
+
+        mMap.setPadding(0,150,0,0);
+
         mMap.setLatLngBoundsForCameraTarget(GucPoints.GUC);
 
         boolean success = googleMap.setMapStyle(new MapStyleOptions(getResources()
@@ -524,11 +530,6 @@ public class ConfirmFragment extends Fragment implements OnMapReadyCallback {
         locationRequest.setInterval(3000);
         locationRequest.setFastestInterval(3000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        //to be removed
-        LatLng latLng = new LatLng(29.986654, 31.440191);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(17));
 
         drawTripRoute();
 

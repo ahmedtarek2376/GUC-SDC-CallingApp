@@ -94,6 +94,8 @@ public class PickupFragment extends Fragment
     private ArrayList<GucPlace> gucPlaces;
 
     private static final String TAG = "PickupFragment";
+    private Handler markersHandler;
+    private Runnable getMarkers;
 
     public void setRequestTrip(RequestTrip requestTrip) {
         this.requestTrip = requestTrip;
@@ -155,7 +157,7 @@ public class PickupFragment extends Fragment
         actionBar.setTitle("Choose Pickup Location");
 
         CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.pickup_fragment);
-        Snackbar snackbar = Snackbar.make(coordinatorLayout, "Click on a pin to choose your pickup location", Snackbar.LENGTH_LONG);
+        Snackbar snackbar = Snackbar.make(coordinatorLayout, "Click on a pin to choose your pickup location", Snackbar.LENGTH_INDEFINITE);
         View view = snackbar.getView();
         view.setBackgroundColor(getResources().getColor(R.color.snackbar_black));
         TextView textView = view.findViewById(android.support.design.R.id.snackbar_text);
@@ -206,6 +208,12 @@ public class PickupFragment extends Fragment
         mMap.setBuildingsEnabled(false);
         mMap.getUiSettings().setMapToolbarEnabled(false);
 
+        LatLng latLng = new LatLng(29.986654, 31.440191);
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(17));
+
+        mMap.setPadding(0,150,0,0);
+
         boolean success = googleMap.setMapStyle(new MapStyleOptions(getResources()
                 .getString(R.string.style_json)));
 
@@ -213,7 +221,7 @@ public class PickupFragment extends Fragment
             Log.e("PickupFragment", "Style parsing failed.");
         }
 
-        // Constrain the camera target to the Adelaide bounds.
+        // Constrain the camera target to the GUC bounds.
         mMap.setLatLngBoundsForCameraTarget(GucPoints.GUC);
 
         addMarkersToMap();
@@ -224,12 +232,6 @@ public class PickupFragment extends Fragment
         locationRequest.setInterval(3000);
         locationRequest.setFastestInterval(3000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        //to be removed
-        LatLng latLng = new LatLng(29.986654, 31.440191);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(17));
-
 
         mMap.setOnMarkerClickListener(onMarkerClickListener);
 
@@ -318,6 +320,9 @@ public class PickupFragment extends Fragment
         if(carhandler!=null){
             carhandler.removeCallbacks(updateCars);
         }
+        if(markersHandler!=null){
+            markersHandler.removeCallbacks(getMarkers);
+        }
     }
 
     public void resumeCarsUpdates() {
@@ -346,21 +351,12 @@ public class PickupFragment extends Fragment
             customMarker.setText(marker.getTitle());
             marker.setIcon(BitmapDescriptorFactory.fromBitmap(customMarker.createBitmapFromView()));
 
-            GucPlace gucPlace = getGucPlaceByName(marker.getTitle());
+            GucPlace gucPlace = GucPoints.getGucPlaceByName(marker.getTitle());
             updatePickupLocation(gucPlace);
 
             return true;
         }
     };
-
-    public GucPlace getGucPlaceByName(String name){
-        for (GucPlace place : gucPlaces){
-            if(place.getName().equalsIgnoreCase(name)){
-                return place;
-            }
-        }
-        return null;
-    }
 
     private View.OnClickListener confirmPickupOnClickListener = new View.OnClickListener() {
         @Override
@@ -390,37 +386,21 @@ public class PickupFragment extends Fragment
 
     public void addMarkersToMap(){
 
-        String url = getResources().getString(R.string.url_get_pins);
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest
-                (Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
+        markersHandler = new Handler();
 
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        gucPlaces = new ArrayList<>();
+        getMarkers = new Runnable() {
+            @Override
+            public void run() {
+                if(MainActivity.gucPlaces.size() < 1){
+                    markersHandler.postDelayed(getMarkers, 500);
+                }else {
+                    drawPins(MainActivity.gucPlaces);
+                }
+            }
+        };
 
-                        for(int i=0;i<response.length();i++){
-                            try {
-                                JSONObject object = response.getJSONObject(i);
-                                GucPlace place = gson.fromJson(object.toString(), GucPlace.class);
-                                gucPlaces.add(place);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        drawPins(gucPlaces);
-                        MainActivity.gucPlaces = gucPlaces;
-                    }
-                }, new Response.ErrorListener() {
+        markersHandler.postDelayed(getMarkers, 0);
 
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-
-                    }
-                });
-
-        jsonArrayRequest.setTag(TAG);
-        // Access the RequestQueue through your singleton class.
-        MyVolleySingleton.getInstance(getActivity()).addToRequestQueue(jsonArrayRequest);
 
     }
 

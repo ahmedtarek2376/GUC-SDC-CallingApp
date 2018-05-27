@@ -240,10 +240,10 @@ public class EditDestinationFragment extends Fragment
         mMap.getUiSettings().setTiltGesturesEnabled(true);
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMap.setMinZoomPreference(16.0f);
-        mMap.setBuildingsEnabled(true);
+        mMap.setBuildingsEnabled(false);
         mMap.getUiSettings().setMapToolbarEnabled(false);
 
-        mMap.setPadding(0,300,0,0);
+        mMap.setPadding(0,150,0,0);
 
         boolean success = googleMap.setMapStyle(new MapStyleOptions(getResources()
                 .getString(R.string.style_json)));
@@ -327,7 +327,7 @@ public class EditDestinationFragment extends Fragment
         @Override
         public void onClick(View v) {
             if(chosenDestinations.size() == 0){
-                CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.destination_fragment);
+                CoordinatorLayout coordinatorLayout = getActivity().findViewById(R.id.edit_destination_fragment);
                 Snackbar snackbar = Snackbar.make(coordinatorLayout, "Please select a destination", Snackbar.LENGTH_SHORT);
                 View view = snackbar.getView();
                 view.setBackgroundColor(getResources().getColor(R.color.red_error));

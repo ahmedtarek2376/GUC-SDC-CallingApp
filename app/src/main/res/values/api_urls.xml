@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="url_get_profile">https://sdc-profile-management.herokuapp.com/profile/find/</string>
-    <string name="url_verify_profile">https://sdc-profile-management.herokuapp.com/profile/verify/</string>
-    <string name="url_get_available_cars">https://sdc-trip-car-management.herokuapp.com/car/find/all/available</string>
-    <string name="url_get_car_details">https://sdc-trip-car-management.herokuapp.com/car/find/</string>
-    <string name="url_check_ongoing_trip">https://sdc-trip-car-management.herokuapp.com/car/ontrip/</string>
-    <string name="url_get_trip_details">https://sdc-trip-car-management.herokuapp.com/trip/find/</string>
-    <string name="url_request_trip">https://sdc-trip-car-management.herokuapp.com/trip/create</string>
-    <string name="url_get_pins">https://sdc-trip-car-management.herokuapp.com/guc/pins</string>
+    <string name="url_get_profile">https://sdc-api-gateway.herokuapp.com/profile/find/</string>
+    <string name="url_verify_profile">https://sdc-api-gateway.herokuapp.com/profile/verify/</string>
+    <string name="url_get_available_cars">https://sdc-api-gateway.herokuapp.com/car/find/all/available</string>
+    <string name="url_get_car_details">https://sdc-api-gateway.herokuapp.com/car/find/</string>
+    <string name="url_check_ongoing_trip">https://sdc-api-gateway.herokuapp.com/car/ontrip/</string>
+    <string name="url_get_trip_details">https://sdc-api-gateway.herokuapp.com/trip/find/</string>
+    <string name="url_request_trip">https://sdc-api-gateway.herokuapp.com/trip/create</string>
+    <string name="url_get_pins">https://sdc-api-gateway.herokuapp.com/guc/pins</string>
 
     <!--TRIP ACTIONS-->
-    <string name="url_trip_start">https://sdc-trip-car-management.herokuapp.com/car/trip/start/mobile/</string>
-    <string name="url_trip_continue">https://sdc-trip-car-management.herokuapp.com/car/trip/continue/mobile/</string>
-    <string name="url_trip_cancel">https://sdc-trip-car-management.herokuapp.com/car/trip/cancel/mobile/</string>
-    <string name="url_trip_end">https://sdc-trip-car-management.herokuapp.com/car/trip/end/mobile/</string>
-    <string name="url_trip_change">https://sdc-trip-car-management.herokuapp.com/car/trip/change/mobile/</string>
+    <string name="url_trip_start">https://sdc-api-gateway.herokuapp.com/car/trip/start/mobile/</string>
+    <string name="url_trip_continue">https://sdc-api-gateway.herokuapp.com/car/trip/continue/mobile/</string>
+    <string name="url_trip_cancel">https://sdc-api-gateway.herokuapp.com/car/trip/cancel/mobile/</string>
+    <string name="url_trip_end">https://sdc-api-gateway.herokuapp.com/car/trip/end/mobile/</string>
+    <string name="url_trip_change">https://sdc-api-gateway.herokuapp.com/car/trip/change/mobile/</string>
     <!---->
 
 </resources>

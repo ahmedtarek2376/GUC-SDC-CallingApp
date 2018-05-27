@@ -33,7 +33,7 @@
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Light">
-        <item name="android:textColorPrimary">@color/colorAccent</item>
+        <item name="android:textColorPrimary">#c7000000</item>
         <item name="drawerArrowStyle">@style/DrawerIconStyle</item>
     </style>
 
