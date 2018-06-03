@@ -70,8 +70,8 @@
                 android:text="Confirm Pickup"
                 android:textSize="20sp"
                 android:textColor="@color/colorPrimary"
-                custom:pb_colorNormal="@color/button_pressed"
-                custom:pb_colorPressed="@color/colorAccent" />
+                custom:pb_colorNormal="@color/colorAccent"
+                custom:pb_colorPressed="@color/button_pressed" />
 
         </LinearLayout>
 

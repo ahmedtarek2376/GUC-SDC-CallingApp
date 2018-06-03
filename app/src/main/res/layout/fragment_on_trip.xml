@@ -356,8 +356,8 @@
                         android:text="Continue to Next Destination"
                         android:textSize="16sp"
                         android:textColor="@color/colorPrimary"
-                        custom:pb_colorNormal="@color/green_a300_pressed"
-                        custom:pb_colorPressed="@color/green_a200"
+                        custom:pb_colorNormal="@color/green_a200"
+                        custom:pb_colorPressed="@color/green_a300_pressed"
                         android:visibility="gone"
                         android:layout_marginTop="10dp"/>
 
@@ -368,8 +368,8 @@
                         android:text="End Ride"
                         android:textSize="16sp"
                         android:textColor="@color/colorPrimary"
-                        custom:pb_colorNormal="@color/red_a100_pressed"
-                        custom:pb_colorPressed="@color/red_a100"
+                        custom:pb_colorNormal="@color/red_a100"
+                        custom:pb_colorPressed="@color/red_a100_pressed"
                         android:visibility="gone"
                         android:layout_marginTop="10dp"/>
 
@@ -380,8 +380,8 @@
                         android:text="Cancel Ride"
                         android:textSize="16sp"
                         android:textColor="@color/colorPrimary"
-                        custom:pb_colorNormal="@color/red_a100_pressed"
-                        custom:pb_colorPressed="@color/red_a100"
+                        custom:pb_colorNormal="@color/red_a100"
+                        custom:pb_colorPressed="@color/red_a100_pressed"
                         android:visibility="gone"
                         android:layout_marginTop="10dp" />
 
@@ -394,8 +394,8 @@
                         android:text="DONE"
                         android:textSize="16sp"
                         android:textColor="@color/colorPrimary"
-                        custom:pb_colorNormal="@color/green_a300_pressed"
-                        custom:pb_colorPressed="@color/green_a200"
+                        custom:pb_colorNormal="@color/green_a200"
+                        custom:pb_colorPressed="@color/green_a300_pressed"
                         android:visibility="gone"
                         android:layout_marginTop="10dp"/>
 

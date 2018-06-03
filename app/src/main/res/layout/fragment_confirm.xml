@@ -245,7 +245,7 @@
                     android:textSize="20sp"
                     android:textColor="@android:color/white"
                     custom:pb_colorNormal="@color/colorAccent"
-                    custom:pb_colorPressed="@color/confirm_blue"
+                    custom:pb_colorPressed="@color/button_pressed"
                     android:layout_gravity="bottom"/>
 
             </LinearLayout>

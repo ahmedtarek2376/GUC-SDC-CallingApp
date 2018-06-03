@@ -104,8 +104,8 @@
                 android:text="Confirm Destination"
                 android:textSize="20sp"
                 android:textColor="@android:color/white"
-                custom:pb_colorNormal="@color/button_pressed"
-                custom:pb_colorPressed="@color/colorAccent" />
+                custom:pb_colorNormal="@color/colorAccent"
+                custom:pb_colorPressed="@color/button_pressed" />
 
         </LinearLayout>
 
